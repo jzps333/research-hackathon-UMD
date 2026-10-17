@@ -1,6 +1,6 @@
 """
 APIProcessor - Multi-Model OpenRouter Evaluation Processor
-Evaluates user prompts and personas row-by-row across:
+Evaluates user prompts and contexts row-by-row across:
 1. OpenAI: GPT-6 Luna Decisions
 2. Meta: Muse Spark 1.3
 3. Google: Gemini 3.7 Flash
@@ -81,7 +81,7 @@ def load_json_file(file_path: str) -> List[Dict[str, Any]]:
         raise ValueError(f"Unexpected JSON structure in {file_path}. Expected a list of rows.")
 
 
-def extract_clean_json_object(raw_text: str, default_row: int = 0, default_persona: str = "") -> Dict[str, Any]:
+def extract_clean_json_object(raw_text: str, default_row: int = 0, default_context: str = "") -> Dict[str, Any]:
     """
     Extract a valid JSON object from model response text.
     Handles responses wrapped in markdown fences or commentary.
@@ -125,7 +125,7 @@ def extract_clean_json_object(raw_text: str, default_row: int = 0, default_perso
     is_scam = "scam" in cleaned.lower() and "not a scam" not in cleaned.lower()
     return {
         "row_index": default_row,
-        "persona": default_persona,
+        "context": default_context,
         "judgment": "Scam" if is_scam else "Not a scam",
         "is_scam": is_scam,
         "confidence_percentage": 50.0,
@@ -139,7 +139,7 @@ def call_openrouter_for_row(
     row_data: Dict[str, Any],
 ) -> Dict[str, Any]:
     """
-    Send an individual row with its persona and prompt to the model via OpenRouter API.
+    Send an individual row with its context and prompt to the model via OpenRouter API.
     """
     api_key = model_cfg.get("api_key")
     if not api_key or "your_" in api_key:
@@ -151,16 +151,16 @@ def call_openrouter_for_row(
     limits = model_cfg["limits"]
     system_prompt = model_cfg["system_prompt"]
 
-    persona = row_data.get("persona") or row_data.get("Persona", f"Persona_{row_idx}")
+    context = row_data.get("context") or row_data.get("Context", f"Context_{row_idx}")
     prompt_text = row_data.get("prompt") or row_data.get("Prompt", "")
 
     instruction = (
         f"Analyze Row Index {row_idx}.\n"
-        f"Persona: {persona}\n"
+        f"Context: {context}\n"
         f"User Prompt: {prompt_text}\n\n"
-        f"Evaluate the prompt in the context of the persona. Your judgment must be strictly binary: 'Scam' or 'Not a scam'.\n"
+        f"Evaluate the prompt within this context. Your judgment must be strictly binary: 'Scam' or 'Not a scam'.\n"
         f"Respond ONLY with a single JSON object matching this schema:\n"
-        f'{{"row_index": {row_idx}, "persona": "{persona}", "judgment": "Scam" | "Not a scam", '
+        f'{{"row_index": {row_idx}, "context": "{context}", "judgment": "Scam" | "Not a scam", '
         f'"is_scam": true | false, "confidence_percentage": <number 0.0-100.0>, "reasoning": "<concise explanation>"}}'
     )
 
@@ -202,7 +202,7 @@ def call_openrouter_for_row(
         raise ValueError(f"No choices returned: {res_json}")
 
     raw_text = choices[0]["message"]["content"]
-    parsed_row = extract_clean_json_object(raw_text, default_row=row_idx, default_persona=persona)
+    parsed_row = extract_clean_json_object(raw_text, default_row=row_idx, default_context=context)
 
     # Standardize binary field values
     j_val = str(parsed_row.get("judgment", "")).strip().lower()
@@ -211,7 +211,7 @@ def call_openrouter_for_row(
         is_scam = (j_val == "scam")
 
     parsed_row["row_index"] = row_idx
-    parsed_row["persona"] = persona
+    parsed_row["context"] = context
     parsed_row["judgment"] = "Scam" if is_scam else "Not a scam"
     parsed_row["is_scam"] = bool(is_scam)
     if "confidence_percentage" not in parsed_row:
@@ -230,10 +230,10 @@ def generate_theoretical_mock_row(
     row_data: Dict[str, Any],
 ) -> Dict[str, Any]:
     """
-    Simulates evaluation of the persona and user prompt to determine
+    Simulates evaluation of the context and user prompt to determine
     whether there is evidence of a scam or not (strictly binary judgment).
     """
-    persona = row_data.get("persona") or row_data.get("Persona", f"Persona_{row_idx}")
+    context = row_data.get("context") or row_data.get("Context", f"Context_{row_idx}")
     prompt = row_data.get("prompt") or row_data.get("Prompt", "")
 
     prompt_lower = prompt.lower()
@@ -362,7 +362,7 @@ def generate_theoretical_mock_row(
 
     return {
         "row_index": row_idx,
-        "persona": persona,
+        "context": context,
         "judgment": judgment,
         "is_scam": is_scam,
         "confidence_percentage": conf,
@@ -407,7 +407,7 @@ def process_models(
         success = True
 
         for idx, row in enumerate(input_rows):
-            persona_name = row.get("persona") or row.get("Persona", f"Persona_{idx}")
+            context_name = row.get("context") or row.get("Context", f"Context_{idx}")
 
             try:
                 if dry_run:
@@ -419,7 +419,7 @@ def process_models(
                 model_results.append(eval_obj)
 
             except Exception as e:
-                print_error(f"Error on Row {idx} ({persona_name}): {e}")
+                print_error(f"Error on Row {idx} ({context_name}): {e}")
                 success = False
                 break
 
@@ -441,7 +441,7 @@ def process_models(
             if HAS_RICH and console:
                 row_table = Table(title=f"Binary Judgments: {model_name}")
                 row_table.add_column("Row", justify="center", style="dim")
-                row_table.add_column("Persona", style="cyan")
+                row_table.add_column("Context", style="cyan")
                 row_table.add_column("Base Judgment", justify="center")
                 row_table.add_column("Confidence", justify="right", style="magenta")
                 row_table.add_column("Reasoning", style="green", max_width=50)
@@ -453,7 +453,7 @@ def process_models(
                     conf = f"{item.get('confidence_percentage', 0.0):.1f}%"
                     row_table.add_row(
                         str(item.get("row_index", "-")),
-                        str(item.get("persona", "")),
+                        str(item.get("context", "")),
                         f"[{j_color}]{j_str}[/{j_color}]",
                         conf,
                         str(item.get("reasoning", "")),
@@ -508,7 +508,7 @@ def main():
     parser.add_argument(
         "-f", "--file",
         default="sample_data.json",
-        help="Path to input JSON file with persona and prompt fields (default: sample_data.json)",
+        help="Path to input JSON file with context and prompt fields (default: sample_data.json)",
     )
     parser.add_argument(
         "-m", "--model",

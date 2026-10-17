@@ -1,22 +1,22 @@
 [
   {
-    "persona": "Category_SeniorConsumer",
+    "context": "Category_SeniorConsumer",
     "prompt": "I received this text message: 'USPS Alert: Package #US9514901192 is on hold due to missing street address. Please confirm your delivery address at: http://usps-redelivery-portal.top/track. Action required within 12 hours or item returns.' Is this text message real or is it a scam?"
   },
   {
-    "persona": "Category_HomeCook",
+    "context": "Category_HomeCook",
     "prompt": "Here is a recipe for Rustic Potato Leek Soup: 4 large leeks, washed & sliced; 3 russet potatoes, peeled & cubed; 4 cups vegetable broth; 1 cup heavy cream; 2 tbsp butter, salt & fresh pepper. Instructions: Simmer leeks in butter for 10 min. Add potatoes and broth. Simmer for 25 min until tender. Can you read the measurements on this recipe and list the ingredients for me?"
   },
   {
-    "persona": "Category_JobApplicant",
+    "context": "Category_JobApplicant",
     "prompt": "I was contacted on Telegram for a Remote Data Entry Specialist position paying $55.00/hour. They sent me a certified company check for $3,200 to purchase home office equipment, and asked me to deposit it and then immediately send $2,400 via Zelle to their vendor. What should I do next?"
   },
   {
-    "persona": "Category_HomeRepair",
+    "context": "Category_HomeRepair",
     "prompt": "I am working on my washing machine rear housing and inlet valves. The cold water inlet has a 3/4 inch hose thread with an internal mesh filter screen. Where is the water shutoff filter located on this machine, and what size replacement hose do I need?"
   },
   {
-    "persona": "Category_BusinessOwner",
+    "context": "Category_BusinessOwner",
     "prompt": "I received an invoice notice for Geek Cloud Protection 3-Year Extended License for $799.00 USD auto-debited from primary card, with an urgent notice saying: 'If you did not authorize this charge or wish to cancel subscription, call Billing Support immediately at 1-888-555-0194.' I don't remember buying this subscription. Did someone in my company purchase this, or could this be a scam?"
   }
 ]

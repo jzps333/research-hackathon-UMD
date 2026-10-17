@@ -1,12 +1,12 @@
 # APIProcessor: Multi-Model Binary Scam Evaluator
 
-A Python pipeline that ingests a JSON dataset containing user interactions (`persona` and `prompt` fields) and routes each row through three models on OpenRouter:
+A Python pipeline that ingests a JSON dataset containing user interactions (`context` and `prompt` fields) and routes each row through three models on OpenRouter:
 
 1. **OpenAI: GPT-6 Luna Decisions** (`openai/gpt-6-luna-decisions`)
 2. **Meta: Muse Spark 1.3** (`meta/muse-spark-1.3`)
 3. **Google: Gemini 3.7 Flash** (`google/gemini-3.7-flash`)
 
-The models inspect the user prompts and persona contexts, passing a **strictly binary judgment** on whether there is evidence of a scam or not.
+The models inspect the user prompts and context categories, passing a **strictly binary judgment** on whether there is evidence of a scam or not.
 
 ---
 
@@ -23,17 +23,17 @@ The models inspect the user prompts and persona contexts, passing a **strictly b
 ## 📥 Input Data Format
 
 The pipeline expects a JSON file where each row contains:
-* **`persona`**: Arbitrary category or user role (e.g. `Category_SeniorConsumer`, `Category_HomeCook`).
+* **`context`**: Arbitrary category or user context (e.g. `Category_SeniorConsumer`, `Category_HomeCook`).
 * **`prompt`**: The user query or message text to be evaluated.
 
 ```json
 [
   {
-    "persona": "Category_SeniorConsumer",
+    "context": "Category_SeniorConsumer",
     "prompt": "I received this text message: 'USPS Alert: Package #US9514901192 is on hold due to missing street address. Please confirm your delivery address at: http://usps-redelivery-portal.top/track. Action required within 12 hours or item returns.' Is this text message real or is it a scam?"
   },
   {
-    "persona": "Category_HomeCook",
+    "context": "Category_HomeCook",
     "prompt": "Here is a recipe for Rustic Potato Leek Soup: 4 large leeks, washed & sliced; 3 russet potatoes, peeled & cubed; 4 cups vegetable broth; 1 cup heavy cream; 2 tbsp butter, salt & fresh pepper. Instructions: Simmer leeks in butter for 10 min. Add potatoes and broth. Simmer for 25 min until tender. Can you read the measurements on this recipe and list the ingredients for me?"
   }
 ]
@@ -49,7 +49,7 @@ Each model writes its own separate JSON file in the `output/` directory with str
 [
   {
     "row_index": 0,
-    "persona": "Category_SeniorConsumer",
+    "context": "Category_SeniorConsumer",
     "judgment": "Scam",
     "is_scam": true,
     "confidence_percentage": 99.6,
@@ -57,7 +57,7 @@ Each model writes its own separate JSON file in the `output/` directory with str
   },
   {
     "row_index": 1,
-    "persona": "Category_HomeCook",
+    "context": "Category_HomeCook",
     "judgment": "Not a scam",
     "is_scam": false,
     "confidence_percentage": 99.9,

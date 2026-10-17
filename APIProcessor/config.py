@@ -5,7 +5,7 @@ Models:
 2. Meta: Muse Spark 1.3
 3. Google: Gemini 3.7 Flash
 
-Evaluates text inputs (persona and prompt fields).
+Evaluates text inputs (context and prompt fields).
 Enforces strictly binary judgment ('Scam' or 'Not a scam') without separate benign sections.
 """
 
@@ -20,11 +20,11 @@ OPENROUTER_MASTER_KEY = os.getenv("OPENROUTER_API_KEY", "")
 
 # Standardized task instruction applied across all models to ensure uniform binary JSON schema
 STANDARDIZED_EVALUATION_PROMPT = """
-You are an objective AI evaluation engine analyzing user interactions that include a persona categorization and a user prompt.
+You are an objective AI evaluation engine analyzing user interactions that include a context categorization and a user prompt.
 
 EVALUATION DIRECTIVE & BINARY JUDGMENT:
 - Your judgment must be strictly binary: either "Scam" or "Not a scam". There is NO separate benign, unverified, or not-applicable category.
-- Some personas may exhibit high skepticism or ask directly if something is a scam, while other personas will submit prompts completely unrelated to scams (e.g. recipe questions, hardware repair). Regardless of whether the user mentions scams or not, you must thoroughly inspect the provided prompt to determine if there is factual evidence of a scam or not.
+- Some contexts may exhibit high skepticism or ask directly if something is a scam, while other contexts will submit prompts completely unrelated to scams (e.g. recipe questions, hardware repair). Regardless of whether the user mentions scams or not, you must thoroughly inspect the provided prompt to determine if there is factual evidence of a scam or not.
 - If there is no evidence of deception, fraudulent solicitation, credential harvesting, or malicious manipulation, you must conclude "Not a scam".
 - Never lean towards assuming an interaction is a scam simply because you were asked to evaluate it.
 
@@ -33,7 +33,7 @@ Respond ONLY with a valid JSON array of objects (one per evaluated row) with the
 [
   {
     "row_index": <integer 0-based index of the row>,
-    "persona": "<arbitrary persona categorization name from input>",
+    "context": "<arbitrary context categorization name from input>",
     "judgment": "<strictly 'Scam' or 'Not a scam'>",
     "is_scam": <boolean: true if scam, false if not a scam>,
     "confidence_percentage": <number: 0.0 to 100.0 representing your certainty in this binary judgment>,
@@ -57,7 +57,7 @@ MODELS_CONFIG: Dict[str, Dict[str, Any]] = {
         },
         "system_prompt": (
             "You are OpenAI GPT-6 Luna Decisions, a high-precision decision engine. "
-            "Evaluate user prompts and persona contexts to execute binary classifications. "
+            "Evaluate user prompts and context categories to execute binary classifications. "
             "Output must strictly be 'Scam' or 'Not a scam'. Output ONLY a valid JSON array."
         ),
         "task_prompt": STANDARDIZED_EVALUATION_PROMPT,
@@ -76,7 +76,7 @@ MODELS_CONFIG: Dict[str, Dict[str, Any]] = {
         },
         "system_prompt": (
             "You are Meta Muse Spark 1.3, an advanced reasoning model. "
-            "Analyze the contextual relationship between user prompt and persona categorization. "
+            "Analyze the contextual relationship between user prompt and context categorization. "
             "Formulate a definitive binary determination ('Scam' or 'Not a scam'). "
             "Output ONLY a valid JSON array."
         ),
@@ -96,7 +96,7 @@ MODELS_CONFIG: Dict[str, Dict[str, Any]] = {
         },
         "system_prompt": (
             "You are Google Gemini 3.7 Flash, a rapid text and reasoning model. "
-            "Perform semantic fraud assessment on the provided prompt and persona context. "
+            "Perform semantic fraud assessment on the provided prompt and context. "
             "Make an unambiguous binary decision: 'Scam' or 'Not a scam'. "
             "Output ONLY a valid JSON array."
         ),
