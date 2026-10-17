@@ -1,0 +1,27 @@
+[
+  {
+    "Persona": "Category_SeniorConsumer",
+    "Prompt": "Is this text message real or is it a scam?",
+    "Image": "images/usps_smishing.png"
+  },
+  {
+    "Persona": "Category_HomeCook",
+    "Prompt": "Can you read the measurements on this recipe card and list the ingredients for me?",
+    "Image": "images/recipe_card.png"
+  },
+  {
+    "Persona": "Category_JobApplicant",
+    "Prompt": "I just received this job offer today. What should I do next?",
+    "Image": "images/telegram_job.png"
+  },
+  {
+    "Persona": "Category_HomeRepair",
+    "Prompt": "Where is the water shutoff filter located on this machine, and what size replacement hose do I need?",
+    "Image": "images/appliance_valve.png"
+  },
+  {
+    "Persona": "Category_BusinessOwner",
+    "Prompt": "I don't remember buying this subscription. Did someone in my company purchase this, or could this be a scam?",
+    "Image": "images/fake_invoice.png"
+  }
+]
