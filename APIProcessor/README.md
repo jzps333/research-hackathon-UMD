@@ -1,50 +1,43 @@
-# APIProcessor: Multi-Model Multimodal Binary Scam Evaluator
+# APIProcessor: Multi-Model Binary Scam Evaluator
 
-A Python pipeline that ingests a JSON dataset containing multimodal user interactions (`Persona`, `Prompt`, and local `Image` paths) and routes each row through three models on OpenRouter:
+A Python pipeline that ingests a JSON dataset containing user interactions (`persona` and `prompt` fields) and routes each row through three models on OpenRouter:
 
 1. **OpenAI: GPT-6 Luna Decisions** (`openai/gpt-6-luna-decisions`)
 2. **Meta: Muse Spark 1.3** (`meta/muse-spark-1.3`)
 3. **Google: Gemini 3.7 Flash** (`google/gemini-3.7-flash`)
 
-The models inspect the actual local image pixels (via base64 data URIs) and user prompts, passing a **strictly binary judgment** on whether there is evidence of a scam or not.
+The models inspect the user prompts and persona contexts, passing a **strictly binary judgment** on whether there is evidence of a scam or not.
 
 ---
 
 ## 🔗 Model Links on OpenRouter
 
-| Provider & Model | OpenRouter Model Identifier | OpenRouter Model Profile | Multimodal Vision Support |
-| :--- | :--- | :--- | :--- |
-| **OpenAI: GPT-6 Luna Decisions** | `openai/gpt-6-luna-decisions` | [OpenRouter Model Page](https://openrouter.ai/models/openai/gpt-6-luna-decisions) | Yes (text & up to 128 inline images, rapid rubric checks) |
-| **Meta: Muse Spark 1.3** | `meta/muse-spark-1.3` | [OpenRouter Model Page](https://openrouter.ai/models/meta/muse-spark-1.3) | Yes (native visual document & UI reasoning) |
-| **Google: Gemini 3.7 Flash** | `google/gemini-3.7-flash` | [OpenRouter Model Page](https://openrouter.ai/models/google/gemini-3.7-flash) | Yes (high-throughput native OCR and visual telemetry) |
+| Provider & Model | OpenRouter Model Identifier | OpenRouter Model Profile |
+| :--- | :--- | :--- |
+| **OpenAI: GPT-6 Luna Decisions** | `openai/gpt-6-luna-decisions` | [OpenRouter Model Page](https://openrouter.ai/models/openai/gpt-6-luna-decisions) |
+| **Meta: Muse Spark 1.3** | `meta/muse-spark-1.3` | [OpenRouter Model Page](https://openrouter.ai/models/meta/muse-spark-1.3) |
+| **Google: Gemini 3.7 Flash** | `google/gemini-3.7-flash` | [OpenRouter Model Page](https://openrouter.ai/models/google/gemini-3.7-flash) |
 
 ---
 
 ## 📥 Input Data Format
 
 The pipeline expects a JSON file where each row contains:
-* **`Persona`**: Arbitrary category name (e.g. `Category_SeniorConsumer`, `Category_HomeCook`).
-* **`Prompt`**: The user's query or instruction.
-* **`Image`**: Relative or absolute path to a local image stored on disk (e.g. `images/usps_smishing.png`).
+* **`persona`**: Arbitrary category or user role (e.g. `Category_SeniorConsumer`, `Category_HomeCook`).
+* **`prompt`**: The user query or message text to be evaluated.
 
 ```json
 [
   {
-    "Persona": "Category_SeniorConsumer",
-    "Prompt": "Is this text message real or is it a scam?",
-    "Image": "images/usps_smishing.png"
+    "persona": "Category_SeniorConsumer",
+    "prompt": "I received this text message: 'USPS Alert: Package #US9514901192 is on hold due to missing street address. Please confirm your delivery address at: http://usps-redelivery-portal.top/track. Action required within 12 hours or item returns.' Is this text message real or is it a scam?"
   },
   {
-    "Persona": "Category_HomeCook",
-    "Prompt": "Can you read the measurements on this recipe card and list the ingredients for me?",
-    "Image": "images/recipe_card.png"
+    "persona": "Category_HomeCook",
+    "prompt": "Here is a recipe for Rustic Potato Leek Soup: 4 large leeks, washed & sliced; 3 russet potatoes, peeled & cubed; 4 cups vegetable broth; 1 cup heavy cream; 2 tbsp butter, salt & fresh pepper. Instructions: Simmer leeks in butter for 10 min. Add potatoes and broth. Simmer for 25 min until tender. Can you read the measurements on this recipe and list the ingredients for me?"
   }
 ]
 ```
-
-### 🖼️ Local Image Processing
-* Local images from disk (`.png`, `.jpg`, `.webp`) are encoded as base64 data URIs (`data:image/png;base64,...`) and passed as multimodal image payloads to OpenRouter.
-* Sample test images can be generated anytime via `python generate_sample_images.py`.
 
 ---
 
@@ -60,7 +53,7 @@ Each model writes its own separate JSON file in the `output/` directory with str
     "judgment": "Scam",
     "is_scam": true,
     "confidence_percentage": 99.6,
-    "reasoning": "Direct image reading confirms phishing URL 'usps-redelivery-portal.top' and spoofed package alert signature. Visual and textual evidence confirm smishing fraud."
+    "reasoning": "Direct message reading confirms phishing URL 'usps-redelivery-portal.top' and spoofed package alert signature. Textual evidence confirms smishing fraud."
   },
   {
     "row_index": 1,
@@ -68,7 +61,7 @@ Each model writes its own separate JSON file in the `output/` directory with str
     "judgment": "Not a scam",
     "is_scam": false,
     "confidence_percentage": 99.9,
-    "reasoning": "OCR and image features confirm standard culinary recipe card (leeks, potatoes, broth). No scam indicators detected."
+    "reasoning": "Semantic analysis confirms standard culinary recipe (leeks, potatoes, broth). No scam indicators detected."
   }
 ]
 ```
@@ -77,7 +70,7 @@ Each model writes its own separate JSON file in the `output/` directory with str
 
 ## ⚙️ Configuration & Adjustable Limits
 
-Create your `.env` file from [`.env.example`](file:///C:/Users/mobil/alan-code/APIProcessor/.env.example):
+Create your `.env` file from `.env.example`:
 ```powershell
 copy .env.example .env
 ```
@@ -116,9 +109,6 @@ GOOGLE_RATE_LIMIT_DELAY=0.5
 ## 🚀 Running the Engine
 
 ```powershell
-# Generate sample images locally (already generated in images/)
-python generate_sample_images.py
-
 # Run all 3 models with live API keys
 python main.py -f sample_data.json
 
@@ -127,7 +117,7 @@ python main.py -m openai
 python main.py -m meta
 python main.py -m google
 
-# Run dry run preview (simulates image reading and binary evaluation)
+# Run dry run preview (simulates text evaluation and binary decisions)
 python main.py --dry-run
 ```
 
@@ -135,6 +125,6 @@ python main.py --dry-run
 
 ## 📂 Output Files Generated
 
-* **[`output/output_openai_gpt_6_luna_decisions.json`](file:///C:/Users/mobil/alan-code/APIProcessor/output/output_openai_gpt_6_luna_decisions.json)**
-* **[`output/output_meta_muse_spark_1_3.json`](file:///C:/Users/mobil/alan-code/APIProcessor/output/output_meta_muse_spark_1_3.json)**
-* **[`output/output_google_gemini_3_7_flash.json`](file:///C:/Users/mobil/alan-code/APIProcessor/output/output_google_gemini_3_7_flash.json)**
+* `output/output_openai_gpt_6_luna_decisions.json`
+* `output/output_meta_muse_spark_1_3.json`
+* `output/output_google_gemini_3_7_flash.json`

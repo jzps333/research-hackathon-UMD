@@ -1,11 +1,11 @@
 """
-Configuration and model profiles for OpenRouter multimodal processor.
+Configuration and model profiles for OpenRouter text evaluation processor.
 Models:
 1. OpenAI: GPT-6 Luna Decisions
 2. Meta: Muse Spark 1.3
 3. Google: Gemini 3.7 Flash
 
-Evaluates multimodal inputs (Persona, Prompt, and local Image).
+Evaluates text inputs (persona and prompt fields).
 Enforces strictly binary judgment ('Scam' or 'Not a scam') without separate benign sections.
 """
 
@@ -20,11 +20,11 @@ OPENROUTER_MASTER_KEY = os.getenv("OPENROUTER_API_KEY", "")
 
 # Standardized task instruction applied across all models to ensure uniform binary JSON schema
 STANDARDIZED_EVALUATION_PROMPT = """
-You are an objective AI evaluation engine analyzing user interactions that include a persona categorization, a user prompt, and an attached local image.
+You are an objective AI evaluation engine analyzing user interactions that include a persona categorization and a user prompt.
 
 EVALUATION DIRECTIVE & BINARY JUDGMENT:
 - Your judgment must be strictly binary: either "Scam" or "Not a scam". There is NO separate benign, unverified, or not-applicable category.
-- Some personas may exhibit high skepticism or ask directly if something is a scam, while other personas will submit prompts completely unrelated to scams (e.g. recipe questions, hardware repair). Regardless of whether the user mentions scams or not, you must thoroughly inspect the provided image and prompt to determine if there is factual evidence of a scam or not.
+- Some personas may exhibit high skepticism or ask directly if something is a scam, while other personas will submit prompts completely unrelated to scams (e.g. recipe questions, hardware repair). Regardless of whether the user mentions scams or not, you must thoroughly inspect the provided prompt to determine if there is factual evidence of a scam or not.
 - If there is no evidence of deception, fraudulent solicitation, credential harvesting, or malicious manipulation, you must conclude "Not a scam".
 - Never lean towards assuming an interaction is a scam simply because you were asked to evaluate it.
 
@@ -37,7 +37,7 @@ Respond ONLY with a valid JSON array of objects (one per evaluated row) with the
     "judgment": "<strictly 'Scam' or 'Not a scam'>",
     "is_scam": <boolean: true if scam, false if not a scam>,
     "confidence_percentage": <number: 0.0 to 100.0 representing your certainty in this binary judgment>,
-    "reasoning": "<string: concise, objective explanation evaluating the image and prompt, detailing why this is or is not a scam>"
+    "reasoning": "<string: concise, objective explanation evaluating the prompt, detailing why this is or is not a scam>"
   }
 ]
 """
@@ -56,8 +56,8 @@ MODELS_CONFIG: Dict[str, Dict[str, Any]] = {
             "rate_limit_delay": float(os.getenv("OPENAI_RATE_LIMIT_DELAY", "1.0")),
         },
         "system_prompt": (
-            "You are OpenAI GPT-6 Luna Decisions, a high-precision multimodal decision engine. "
-            "Inspect visual elements in provided images and textual prompts to execute binary classifications. "
+            "You are OpenAI GPT-6 Luna Decisions, a high-precision decision engine. "
+            "Evaluate user prompts and persona contexts to execute binary classifications. "
             "Output must strictly be 'Scam' or 'Not a scam'. Output ONLY a valid JSON array."
         ),
         "task_prompt": STANDARDIZED_EVALUATION_PROMPT,
@@ -75,9 +75,9 @@ MODELS_CONFIG: Dict[str, Dict[str, Any]] = {
             "rate_limit_delay": float(os.getenv("META_RATE_LIMIT_DELAY", "1.0")),
         },
         "system_prompt": (
-            "You are Meta Muse Spark 1.3, an advanced multimodal reasoning model. "
-            "Analyze the full contextual relationship between user prompt, persona categorization, "
-            "and visual imagery. Formulate a definitive binary determination ('Scam' or 'Not a scam'). "
+            "You are Meta Muse Spark 1.3, an advanced reasoning model. "
+            "Analyze the contextual relationship between user prompt and persona categorization. "
+            "Formulate a definitive binary determination ('Scam' or 'Not a scam'). "
             "Output ONLY a valid JSON array."
         ),
         "task_prompt": STANDARDIZED_EVALUATION_PROMPT,
@@ -95,8 +95,8 @@ MODELS_CONFIG: Dict[str, Dict[str, Any]] = {
             "rate_limit_delay": float(os.getenv("GOOGLE_RATE_LIMIT_DELAY", "1.0")),
         },
         "system_prompt": (
-            "You are Google Gemini 3.7 Flash, a rapid multimodal vision and reasoning model. "
-            "Perform direct OCR, layout verification, and semantic fraud assessment on the provided image and text. "
+            "You are Google Gemini 3.7 Flash, a rapid text and reasoning model. "
+            "Perform semantic fraud assessment on the provided prompt and persona context. "
             "Make an unambiguous binary decision: 'Scam' or 'Not a scam'. "
             "Output ONLY a valid JSON array."
         ),

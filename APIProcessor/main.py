@@ -1,12 +1,11 @@
 """
-APIProcessor - Multi-Model OpenRouter Multimodal Processor
-Evaluates local images and user prompts row-by-row across:
+APIProcessor - Multi-Model OpenRouter Evaluation Processor
+Evaluates user prompts and personas row-by-row across:
 1. OpenAI: GPT-6 Luna Decisions
 2. Meta: Muse Spark 1.3
 3. Google: Gemini 3.7 Flash
 
 Enforces strictly binary judgment ("Scam" or "Not a scam").
-Encodes local image files into base64 data URIs so each LLM processes visual pixels directly.
 """
 
 import os
@@ -14,8 +13,6 @@ import sys
 import json
 import time
 import re
-import mimetypes
-import base64
 import argparse
 from typing import Any, Dict, List, Optional, Union
 import requests
@@ -84,25 +81,6 @@ def load_json_file(file_path: str) -> List[Dict[str, Any]]:
         raise ValueError(f"Unexpected JSON structure in {file_path}. Expected a list of rows.")
 
 
-def encode_local_image_to_data_uri(image_path: str) -> str:
-    """
-    Read a local image file and encode it as a base64 data URI (e.g. data:image/png;base64,...).
-    Allows vision models on OpenRouter to process local images directly.
-    """
-    if not os.path.exists(image_path):
-        raise FileNotFoundError(f"Local image file not found at: {image_path}")
-
-    mime_type, _ = mimetypes.guess_type(image_path)
-    if not mime_type or not mime_type.startswith("image/"):
-        # Default fallback to png
-        mime_type = "image/png"
-
-    with open(image_path, "rb") as img_file:
-        encoded_bytes = base64.b64encode(img_file.read()).decode("utf-8")
-
-    return f"data:{mime_type};base64,{encoded_bytes}"
-
-
 def extract_clean_json_object(raw_text: str, default_row: int = 0, default_persona: str = "") -> Dict[str, Any]:
     """
     Extract a valid JSON object from model response text.
@@ -155,13 +133,13 @@ def extract_clean_json_object(raw_text: str, default_row: int = 0, default_perso
     }
 
 
-def call_openrouter_vision_for_row(
+def call_openrouter_for_row(
     model_cfg: Dict[str, Any],
     row_idx: int,
     row_data: Dict[str, Any],
 ) -> Dict[str, Any]:
     """
-    Send an individual row with its local image and prompt to the model via OpenRouter Vision API.
+    Send an individual row with its persona and prompt to the model via OpenRouter API.
     """
     api_key = model_cfg.get("api_key")
     if not api_key or "your_" in api_key:
@@ -173,42 +151,24 @@ def call_openrouter_vision_for_row(
     limits = model_cfg["limits"]
     system_prompt = model_cfg["system_prompt"]
 
-    persona = row_data.get("Persona") or row_data.get("persona", f"Persona_{row_idx}")
-    prompt_text = row_data.get("Prompt") or row_data.get("prompt", "")
-    image_path = (
-        row_data.get("Image")
-        or row_data.get("image")
-        or row_data.get("Image_Path")
-        or row_data.get("image_path")
-    )
-
-    # Build multimodal content array
-    user_content_parts = []
+    persona = row_data.get("persona") or row_data.get("Persona", f"Persona_{row_idx}")
+    prompt_text = row_data.get("prompt") or row_data.get("Prompt", "")
 
     instruction = (
         f"Analyze Row Index {row_idx}.\n"
         f"Persona: {persona}\n"
         f"User Prompt: {prompt_text}\n\n"
-        f"Evaluate the attached image and the prompt. Your judgment must be strictly binary: 'Scam' or 'Not a scam'.\n"
+        f"Evaluate the prompt in the context of the persona. Your judgment must be strictly binary: 'Scam' or 'Not a scam'.\n"
         f"Respond ONLY with a single JSON object matching this schema:\n"
         f'{{"row_index": {row_idx}, "persona": "{persona}", "judgment": "Scam" | "Not a scam", '
         f'"is_scam": true | false, "confidence_percentage": <number 0.0-100.0>, "reasoning": "<concise explanation>"}}'
     )
-    user_content_parts.append({"type": "text", "text": instruction})
-
-    # Encode local image if provided
-    if image_path:
-        data_uri = encode_local_image_to_data_uri(image_path)
-        user_content_parts.append({
-            "type": "image_url",
-            "image_url": {"url": data_uri}
-        })
 
     payload = {
         "model": model_id,
         "messages": [
             {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_content_parts},
+            {"role": "user", "content": instruction},
         ],
         "max_tokens": limits.get("max_tokens", 4096),
         "temperature": limits.get("temperature", 0.1),
@@ -260,140 +220,135 @@ def call_openrouter_vision_for_row(
     return parsed_row
 
 
+# Alias for backward compatibility
+call_openrouter_vision_for_row = call_openrouter_for_row
+
+
 def generate_theoretical_mock_row(
     model_key: str,
     row_idx: int,
     row_data: Dict[str, Any],
 ) -> Dict[str, Any]:
     """
-    Simulates direct visual inspection of the local image files and evaluates
+    Simulates evaluation of the persona and user prompt to determine
     whether there is evidence of a scam or not (strictly binary judgment).
     """
-    persona = row_data.get("Persona") or row_data.get("persona", f"Persona_{row_idx}")
-    prompt = row_data.get("Prompt") or row_data.get("prompt", "")
-    image_path = (
-        row_data.get("Image")
-        or row_data.get("image")
-        or row_data.get("Image_Path")
-        or row_data.get("image_path")
-        or ""
-    )
+    persona = row_data.get("persona") or row_data.get("Persona", f"Persona_{row_idx}")
+    prompt = row_data.get("prompt") or row_data.get("Prompt", "")
 
-    img_lower = image_path.lower()
     prompt_lower = prompt.lower()
 
     # Row 0: USPS Smishing
-    if "smishing" in img_lower or "usps" in prompt_lower or "usps" in img_lower:
+    if "usps" in prompt_lower or "smishing" in prompt_lower or "redelivery" in prompt_lower:
         judgment = "Scam"
         is_scam = True
         if model_key == "openai":
             reasoning = (
-                "Visual OCR analysis of the attached SMS screenshot confirms fraudulent domain "
-                "'usps-redelivery-portal.top' and artificial 12-hour expiration urgency. "
-                "Definitive smishing credential harvesting attempt."
+                "Textual analysis confirms fraudulent domain 'usps-redelivery-portal.top' "
+                "and artificial 12-hour expiration urgency. Definitive smishing credential harvesting attempt."
             )
             conf = 99.4
         elif model_key == "meta":
             reasoning = (
-                "Image inspection shows an unsolicited text message from an unknown number paired with an "
+                "Message analysis shows an unsolicited text message from an unknown sender paired with an "
                 "untrusted .top top-level domain pretending to be postal authorities. High-confidence deceptive scam."
             )
             conf = 98.9
         else:  # google
             reasoning = (
-                "Direct image reading confirms phishing URL 'usps-redelivery-portal.top' and spoofed package alert "
-                "signature. Visual and textual evidence confirm smishing fraud."
+                "Direct message reading confirms phishing URL 'usps-redelivery-portal.top' and spoofed package alert "
+                "signature. Textual evidence confirms smishing fraud."
             )
             conf = 99.6
 
     # Row 1: Recipe Card (Prompt unrelated to scam)
-    elif "recipe" in img_lower or "recipe" in prompt_lower:
+    elif "recipe" in prompt_lower or "soup" in prompt_lower or "leek" in prompt_lower:
         judgment = "Not a scam"
         is_scam = False
         if model_key == "openai":
             reasoning = (
-                "Inspection of the attached recipe card image shows ingredients and cooking directions for "
-                "Potato Leek Soup. No financial requests, links, or deceptive mechanisms present. Clean and legitimate."
+                "Prompt text presents ingredients and cooking directions for Potato Leek Soup. "
+                "No financial requests, links, or deceptive mechanisms present. Clean and legitimate."
             )
             conf = 99.8
         elif model_key == "meta":
             reasoning = (
-                "Visual elements depict authentic culinary instructions with standard kitchen measurements. "
-                "Prompt asks for ingredient reading. Zero indicators of deception or fraud."
+                "Context depicts authentic culinary instructions with standard kitchen measurements. "
+                "Prompt asks for ingredient clarification. Zero indicators of deception or fraud."
             )
             conf = 99.7
         else:  # google
             reasoning = (
-                "OCR and image features confirm standard culinary recipe card (leeks, potatoes, broth). "
+                "Semantic analysis confirms standard culinary recipe (leeks, potatoes, broth). "
                 "No scam indicators detected."
             )
             conf = 99.9
 
     # Row 2: Telegram Job Check Scam
-    elif "telegram" in img_lower or "job" in prompt_lower or "check" in prompt_lower or "zelle" in prompt_lower:
+    elif "telegram" in prompt_lower or "job" in prompt_lower or "check" in prompt_lower or "zelle" in prompt_lower:
         judgment = "Scam"
         is_scam = True
         if model_key == "openai":
             reasoning = (
-                "Image shows a Telegram recruitment chat instructing the user to deposit a $3,200 company check "
+                "Prompt details a Telegram recruitment communication instructing the user to deposit a $3,200 company check "
                 "and immediately send $2,400 via Zelle to a third-party vendor. Classic fake check overpayment fraud."
             )
             conf = 99.2
         elif model_key == "meta":
             reasoning = (
-                "Multimodal review of chat screenshot demonstrates textbook advance-fee employment fraud: "
+                "Contextual review of job offer demonstrates textbook advance-fee employment fraud: "
                 "unrealistic pay ($55/hr), remote hiring on Telegram, and an irreversible Zelle transfer demand."
             )
             conf = 98.8
         else:  # google
             reasoning = (
-                "Visual evidence in chat transcript highlights high-risk fraud markers: fake check issuance coupled "
+                "Textual evidence in communication highlights high-risk fraud markers: fake check issuance coupled "
                 "with an urgent Zelle remittance for home office equipment."
             )
             conf = 99.3
 
     # Row 3: Washing Machine Valve (Prompt unrelated to scam)
-    elif "appliance" in img_lower or "valve" in img_lower or "machine" in prompt_lower:
+    elif "appliance" in prompt_lower or "valve" in prompt_lower or "machine" in prompt_lower or "hose" in prompt_lower:
         judgment = "Not a scam"
         is_scam = False
         if model_key == "openai":
             reasoning = (
-                "Visual inspection of the washing machine rear panel diagram displays cold/hot inlet valves and "
-                "standard 3/4\" hose thread specifications. Valid technical diagram; no scam elements detected."
+                "User prompt describes washing machine maintenance and standard 3/4\" hose thread specifications. "
+                "Valid technical plumbing inquiry; no scam elements detected."
             )
             conf = 99.8
         elif model_key == "meta":
             reasoning = (
-                "Image represents mechanical equipment documentation for water inlet maintenance and filter cleaning. "
+                "Inquiry concerns mechanical equipment maintenance for water inlet valves and filter cleaning. "
                 "Prompt concerns plumbing repairs. Absolutely no evidence of fraudulent manipulation."
             )
             conf = 99.6
         else:  # google
             reasoning = (
-                "Diagram and prompt analysis show authentic appliance maintenance specifications. "
+                "Prompt analysis shows authentic appliance maintenance specifications. "
                 "Zero fraudulent or malicious characteristics present."
             )
             conf = 99.9
 
     # Row 4: Fake Invoice
-    elif "invoice" in img_lower or "invoice" in prompt_lower or "subscription" in prompt_lower:
+    elif "invoice" in prompt_lower or "subscription" in prompt_lower or "geek" in prompt_lower or "1-888" in prompt_lower:
         judgment = "Scam"
         is_scam = True
         if model_key == "openai":
             reasoning = (
-                "Document inspection of the invoice shows an unauthorized $799.00 auto-debit claim paired with "
+                "Analysis of the invoice notice shows an unauthorized $799.00 auto-debit claim paired with "
                 "a prominent telephone dispute number (1-888-555-0194). Classic callback tech support phishing scam."
             )
             conf = 97.2
         elif model_key == "meta":
             reasoning = (
-                "Visual layout reveals a fabricated billing notification engineered to induce urgency and panic, "
+                "Prompt describes a fabricated billing notification engineered to induce urgency and panic, "
                 "directing the recipient to call a toll-free number for a refund. Clear refund fraud vector."
             )
             conf = 96.5
         else:  # google
             reasoning = (
-                "Invoice image reveals callback scam characteristics: bogus 'Geek Cloud Protection' debit and "
+                "Notice details reveal callback scam characteristics: bogus 'Geek Cloud Protection' debit and "
                 "fraudulent phone solicitation vector. Strong evidence of a scam."
             )
             conf = 97.8
@@ -402,7 +357,7 @@ def generate_theoretical_mock_row(
         # Default fallback
         judgment = "Not a scam"
         is_scam = False
-        reasoning = "Visual and textual review confirms no presence of fraudulent schemes, phishing, or deceptive solicitations."
+        reasoning = "Textual review confirms no presence of fraudulent schemes, phishing, or deceptive solicitations."
         conf = 95.0
 
     return {
@@ -433,7 +388,7 @@ def process_models(
     print_info(f"Output Directory: {output_dir}")
     print_info(f"Executing models: {', '.join(selected_models).upper()}")
     if dry_run:
-        print_warn("Mode: DRY RUN (Simulating visual inspection of local images & binary decisions)")
+        print_warn("Mode: DRY RUN (Simulating text evaluation of prompt & binary decisions)")
 
     results_summary = []
 
@@ -452,15 +407,14 @@ def process_models(
         success = True
 
         for idx, row in enumerate(input_rows):
-            persona_name = row.get("Persona") or row.get("persona", f"Persona_{idx}")
-            img_ref = row.get("Image") or row.get("image", "No Image")
+            persona_name = row.get("persona") or row.get("Persona", f"Persona_{idx}")
 
             try:
                 if dry_run:
                     time.sleep(0.15)  # Simulate brief processing
                     eval_obj = generate_theoretical_mock_row(key, idx, row)
                 else:
-                    eval_obj = call_openrouter_vision_for_row(cfg, idx, row)
+                    eval_obj = call_openrouter_for_row(cfg, idx, row)
 
                 model_results.append(eval_obj)
 
@@ -549,12 +503,12 @@ def process_models(
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Multimodal Binary Scam Evaluation across OpenAI GPT-6 Luna, Meta Muse Spark, and Google Gemini 3.7 Flash via OpenRouter."
+        description="Binary Scam Evaluation across OpenAI GPT-6 Luna, Meta Muse Spark, and Google Gemini 3.7 Flash via OpenRouter."
     )
     parser.add_argument(
         "-f", "--file",
         default="sample_data.json",
-        help="Path to input JSON file with Persona, Prompt, and Image links (default: sample_data.json)",
+        help="Path to input JSON file with persona and prompt fields (default: sample_data.json)",
     )
     parser.add_argument(
         "-m", "--model",
