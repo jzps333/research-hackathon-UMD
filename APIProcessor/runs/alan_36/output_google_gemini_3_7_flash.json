@@ -1,0 +1,290 @@
+[
+  {
+    "row_index": 0,
+    "incident_id": "S01",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "The email uses classic phishing tactics, including impersonating a well-known healthcare provider (United Healthcare), offering an enticing reward for a survey, and creating artificial urgency with a same-day expiration date to harvest personal data.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 1,
+    "incident_id": "S01",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "The email uses classic phishing tactics, including brand impersonation (United Healthcare), an alluring reward (Medicare Kit), and artificial urgency to coerce the recipient into sharing personal or sensitive healthcare details.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 2,
+    "incident_id": "S01",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "Offers of free Medicare kits or rewards in exchange for completing an urgent survey are common phishing tactics used to steal personal identifiable information and Medicare numbers.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 3,
+    "incident_id": "S02",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "The message uses a common smishing lure promising a fake $2,600 senior benefit card to solicit replies, aiming to harvest personal information or initiate advance-fee fraud.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 4,
+    "incident_id": "S02",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "The text message is a common smishing scam promising a non-existent $2,600 senior benefit card to trick the recipient into responding and providing personal or financial information.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 5,
+    "incident_id": "S02",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "The prompt describes a well-known 'senior grocery card' or 'flex card' scam that falsely promises senior citizens thousands of dollars in prepaid benefits to harvest personal or Medicare information.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 6,
+    "incident_id": "S03",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "The email impersonates the Social Security Administration using a lure with a direct download link, which is a common phishing tactic to steal personal information or deliver malware.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 7,
+    "incident_id": "S03",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "The email is a phishing attempt impersonating the Social Security Administration; legitimate SSA communications do not provide direct download links for statements and require users to log in directly via the official SSA website.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 8,
+    "incident_id": "S03",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "The user is asking a benign technical support question regarding how to save a downloaded statement to their computer, with no malicious or fraudulent elements present.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 9,
+    "incident_id": "S04",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "The email exhibits classic hallmarks of a phishing/giveaway scam, using brand impersonation (CVS/Medicare) and fake selection notices to trick recipients into providing sensitive personal or financial information.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 10,
+    "incident_id": "S04",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "The email exhibits classic phishing indicators, including brand impersonation (CVS/Medicare), false scarcity, and an unsolicited giveaway lure designed to steal personal or financial information.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 11,
+    "incident_id": "S04",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "The message uses classic phishing tactics, including impersonation of a well-known brand (CVS), false scarcity ('one of four people selected'), and manufactured urgency ('confirm it quickly') to lure the victim into disclosing personal Medicare information or paying fraudulent fees.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 12,
+    "incident_id": "S05",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "The Social Security Administration never suspends Social Security numbers or threatens immediate suspension due to criminal activities; this is a classic government imposter scam designed to induce panic.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 13,
+    "incident_id": "S05",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "The Social Security Administration never suspends Social Security numbers or demands urgent phone contact via email attachments threatening 24-hour action; this is a classic government imposter scam.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 14,
+    "incident_id": "S05",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "The scenario describes a classic government imposter scam. Social Security numbers are never suspended, and government agencies do not issue 24-hour suspension ultimatums over the phone or demand immediate calls to an investigator.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 15,
+    "incident_id": "S06",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "The email impersonates the Social Security Administration using suspicious links ('Invoice-ssa.gov.pdf'), incorrect agency naming ('SociaI Security Administrations'), a generic greeting, and fraudulent copyright information ('sss.gov').",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 16,
+    "incident_id": "S06",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "The email is a phishing scam impersonating the Social Security Administration, utilizing deceptive naming and linking to a suspicious malicious attachment/link.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 17,
+    "incident_id": "S06",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "The prompt is a straightforward, legitimate technical query asking for assistance on how to view a PDF statement from an online account, containing no indicators of fraud or malicious intent.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 18,
+    "incident_id": "B01",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "The text message is a legitimate automated security confirmation triggered by the user's actual action of linking an account earlier that day.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 19,
+    "incident_id": "B01",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "The text message is a legitimate automated security confirmation regarding an action the user confirmed they actually performed.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 20,
+    "incident_id": "B01",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "The prompt is a legitimate customer service inquiry asking how to verify that a linked bank account was successfully added to Fidelity, with no indicators of fraud or malicious intent.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 21,
+    "incident_id": "B02",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "The email represents a standard, routine billing notification that matches expected monthly account activity with no explicit indicators of deception or malicious intent.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 22,
+    "incident_id": "B02",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "The user is asking about standard routine bill notification emails from a legitimate service provider and how to safely access their bill.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 23,
+    "incident_id": "B02",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "The user is asking a standard, benign question about how to legitimately view and pay their AT&T bill through their official account.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 24,
+    "incident_id": "B03",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "This is a standard administrative notification from the user's recognized doctor's office providing seasonal clinic hours and directing them to call the office directly without suspicious links or requests for sensitive information.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 25,
+    "incident_id": "B03",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "The user is asking for practical advice on scheduling standard flu and COVID-19 vaccine appointments after receiving a routine informational notice from their doctor's office.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 26,
+    "incident_id": "B03",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "The user is asking a legitimate health-related question regarding what to inquire about before scheduling a vaccination appointment.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 27,
+    "incident_id": "B04",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "The security notification directly corresponds to the user's legitimate action of logging in from a new device, and it standardly advises ignoring the alert if the activity was recognized without demanding urgent sensitive actions.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 28,
+    "incident_id": "B04",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "The email describes standard legitimate automated security alert behavior corresponding directly to the user's recent login activity on a new device.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 29,
+    "incident_id": "B04",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "The user is inquiring about a standard security notification received after legitimate account activity on a new device, with no indicators of fraud or malicious intent.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 30,
+    "incident_id": "B07",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "The letter describes the standard advance notification process used by the Centers for Medicare & Medicaid Services (CMS) for legitimate research programs, such as the Medicare Current Beneficiary Survey (MCBS).",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 31,
+    "incident_id": "B07",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "The user is asking a legitimate question about verifying an official CMS survey notification, which is a standard procedure conducted by authorized Medicare contractors.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 32,
+    "incident_id": "B07",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "The prompt describes legitimate Medicare programs like the Medicare Current Beneficiary Survey (MCBS) or CAHPS, which survey beneficiaries about their healthcare experiences without requesting sensitive financial information.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 33,
+    "incident_id": "B08",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "The text message is a standard onboarding promotion and rewards benefit sent directly after signing up for the 7-Eleven rewards program, featuring standard SMS compliance language.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 34,
+    "incident_id": "B08",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "The user is asking a legitimate security and navigational question regarding a standard promotional fuel reward offer and best practices for accessing rewards.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 35,
+    "incident_id": "B08",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "The prompt is a routine customer query regarding how to use a standard loyalty reward discount at a gas pump, showing no indicators of fraud or deceptive activity.",
+    "generated_by": "google/gemini-3.7-flash"
+  }
+]

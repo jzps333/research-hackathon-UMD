@@ -1,0 +1,290 @@
+[
+  {
+    "row_index": 0,
+    "incident_id": "S01",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "Classified by the Decisions API. Choice probabilities: {'Scam': 0.04, 'Not a scam': 0.96}",
+    "generated_by": "openai/gpt-6-luna-decisions"
+  },
+  {
+    "row_index": 1,
+    "incident_id": "S01",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "Classified by the Decisions API. Choice probabilities: {'Scam': 0.38, 'Not a scam': 0.62}",
+    "generated_by": "openai/gpt-6-luna-decisions"
+  },
+  {
+    "row_index": 2,
+    "incident_id": "S01",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "Classified by the Decisions API. Choice probabilities: {'Scam': 0.48, 'Not a scam': 0.52}",
+    "generated_by": "openai/gpt-6-luna-decisions"
+  },
+  {
+    "row_index": 3,
+    "incident_id": "S02",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "Classified by the Decisions API. Choice probabilities: {'Scam': 0.14, 'Not a scam': 0.86}",
+    "generated_by": "openai/gpt-6-luna-decisions"
+  },
+  {
+    "row_index": 4,
+    "incident_id": "S02",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "Classified by the Decisions API. Choice probabilities: {'Scam': 0.44, 'Not a scam': 0.56}",
+    "generated_by": "openai/gpt-6-luna-decisions"
+  },
+  {
+    "row_index": 5,
+    "incident_id": "S02",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "Classified by the Decisions API. Choice probabilities: {'Scam': 0.14, 'Not a scam': 0.86}",
+    "generated_by": "openai/gpt-6-luna-decisions"
+  },
+  {
+    "row_index": 6,
+    "incident_id": "S03",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "Classified by the Decisions API. Choice probabilities: {'Scam': 0.14, 'Not a scam': 0.86}",
+    "generated_by": "openai/gpt-6-luna-decisions"
+  },
+  {
+    "row_index": 7,
+    "incident_id": "S03",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "Classified by the Decisions API. Choice probabilities: {'Scam': 0.26, 'Not a scam': 0.74}",
+    "generated_by": "openai/gpt-6-luna-decisions"
+  },
+  {
+    "row_index": 8,
+    "incident_id": "S03",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "Classified by the Decisions API. Choice probabilities: {'Scam': 0.02, 'Not a scam': 0.98}",
+    "generated_by": "openai/gpt-6-luna-decisions"
+  },
+  {
+    "row_index": 9,
+    "incident_id": "S04",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "Classified by the Decisions API. Choice probabilities: {'Scam': 0.16, 'Not a scam': 0.84}",
+    "generated_by": "openai/gpt-6-luna-decisions"
+  },
+  {
+    "row_index": 10,
+    "incident_id": "S04",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "Classified by the Decisions API. Choice probabilities: {'Scam': 0.54, 'Not a scam': 0.46}",
+    "generated_by": "openai/gpt-6-luna-decisions"
+  },
+  {
+    "row_index": 11,
+    "incident_id": "S04",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "Classified by the Decisions API. Choice probabilities: {'Scam': 0.82, 'Not a scam': 0.18}",
+    "generated_by": "openai/gpt-6-luna-decisions"
+  },
+  {
+    "row_index": 12,
+    "incident_id": "S05",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "Classified by the Decisions API. Choice probabilities: {'Scam': 0.13, 'Not a scam': 0.87}",
+    "generated_by": "openai/gpt-6-luna-decisions"
+  },
+  {
+    "row_index": 13,
+    "incident_id": "S05",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "Classified by the Decisions API. Choice probabilities: {'Scam': 0.36, 'Not a scam': 0.64}",
+    "generated_by": "openai/gpt-6-luna-decisions"
+  },
+  {
+    "row_index": 14,
+    "incident_id": "S05",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "Classified by the Decisions API. Choice probabilities: {'Scam': 0.89, 'Not a scam': 0.11}",
+    "generated_by": "openai/gpt-6-luna-decisions"
+  },
+  {
+    "row_index": 15,
+    "incident_id": "S06",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "Classified by the Decisions API. Choice probabilities: {'Scam': 0.24, 'Not a scam': 0.76}",
+    "generated_by": "openai/gpt-6-luna-decisions"
+  },
+  {
+    "row_index": 16,
+    "incident_id": "S06",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "Classified by the Decisions API. Choice probabilities: {'Scam': 0.96, 'Not a scam': 0.04}",
+    "generated_by": "openai/gpt-6-luna-decisions"
+  },
+  {
+    "row_index": 17,
+    "incident_id": "S06",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "Classified by the Decisions API. Choice probabilities: {'Scam': 0.11, 'Not a scam': 0.89}",
+    "generated_by": "openai/gpt-6-luna-decisions"
+  },
+  {
+    "row_index": 18,
+    "incident_id": "B01",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "Classified by the Decisions API. Choice probabilities: {'Scam': 0.08, 'Not a scam': 0.92}",
+    "generated_by": "openai/gpt-6-luna-decisions"
+  },
+  {
+    "row_index": 19,
+    "incident_id": "B01",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "Classified by the Decisions API. Choice probabilities: {'Scam': 0.15, 'Not a scam': 0.85}",
+    "generated_by": "openai/gpt-6-luna-decisions"
+  },
+  {
+    "row_index": 20,
+    "incident_id": "B01",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "Classified by the Decisions API. Choice probabilities: {'Scam': 0.11, 'Not a scam': 0.89}",
+    "generated_by": "openai/gpt-6-luna-decisions"
+  },
+  {
+    "row_index": 21,
+    "incident_id": "B02",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "Classified by the Decisions API. Choice probabilities: {'Scam': 0.21, 'Not a scam': 0.79}",
+    "generated_by": "openai/gpt-6-luna-decisions"
+  },
+  {
+    "row_index": 22,
+    "incident_id": "B02",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "Classified by the Decisions API. Choice probabilities: {'Scam': 0.1, 'Not a scam': 0.9}",
+    "generated_by": "openai/gpt-6-luna-decisions"
+  },
+  {
+    "row_index": 23,
+    "incident_id": "B02",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "Classified by the Decisions API. Choice probabilities: {'Scam': 0.06, 'Not a scam': 0.94}",
+    "generated_by": "openai/gpt-6-luna-decisions"
+  },
+  {
+    "row_index": 24,
+    "incident_id": "B03",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "Classified by the Decisions API. Choice probabilities: {'Scam': 0.09, 'Not a scam': 0.91}",
+    "generated_by": "openai/gpt-6-luna-decisions"
+  },
+  {
+    "row_index": 25,
+    "incident_id": "B03",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "Classified by the Decisions API. Choice probabilities: {'Scam': 0.05, 'Not a scam': 0.95}",
+    "generated_by": "openai/gpt-6-luna-decisions"
+  },
+  {
+    "row_index": 26,
+    "incident_id": "B03",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "Classified by the Decisions API. Choice probabilities: {'Scam': 0.12, 'Not a scam': 0.88}",
+    "generated_by": "openai/gpt-6-luna-decisions"
+  },
+  {
+    "row_index": 27,
+    "incident_id": "B04",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "Classified by the Decisions API. Choice probabilities: {'Scam': 0.12, 'Not a scam': 0.88}",
+    "generated_by": "openai/gpt-6-luna-decisions"
+  },
+  {
+    "row_index": 28,
+    "incident_id": "B04",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "Classified by the Decisions API. Choice probabilities: {'Scam': 0.16, 'Not a scam': 0.84}",
+    "generated_by": "openai/gpt-6-luna-decisions"
+  },
+  {
+    "row_index": 29,
+    "incident_id": "B04",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "Classified by the Decisions API. Choice probabilities: {'Scam': 0.09, 'Not a scam': 0.91}",
+    "generated_by": "openai/gpt-6-luna-decisions"
+  },
+  {
+    "row_index": 30,
+    "incident_id": "B07",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "Classified by the Decisions API. Choice probabilities: {'Scam': 0.1, 'Not a scam': 0.9}",
+    "generated_by": "openai/gpt-6-luna-decisions"
+  },
+  {
+    "row_index": 31,
+    "incident_id": "B07",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "Classified by the Decisions API. Choice probabilities: {'Scam': 0.11, 'Not a scam': 0.89}",
+    "generated_by": "openai/gpt-6-luna-decisions"
+  },
+  {
+    "row_index": 32,
+    "incident_id": "B07",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "Classified by the Decisions API. Choice probabilities: {'Scam': 0.15, 'Not a scam': 0.85}",
+    "generated_by": "openai/gpt-6-luna-decisions"
+  },
+  {
+    "row_index": 33,
+    "incident_id": "B08",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "Classified by the Decisions API. Choice probabilities: {'Scam': 0.19, 'Not a scam': 0.81}",
+    "generated_by": "openai/gpt-6-luna-decisions"
+  },
+  {
+    "row_index": 34,
+    "incident_id": "B08",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "Classified by the Decisions API. Choice probabilities: {'Scam': 0.24, 'Not a scam': 0.76}",
+    "generated_by": "openai/gpt-6-luna-decisions"
+  },
+  {
+    "row_index": 35,
+    "incident_id": "B08",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "Classified by the Decisions API. Choice probabilities: {'Scam': 0.22, 'Not a scam': 0.78}",
+    "generated_by": "openai/gpt-6-luna-decisions"
+  }
+]
