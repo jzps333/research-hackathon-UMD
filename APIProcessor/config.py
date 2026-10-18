@@ -20,23 +20,22 @@ OPENROUTER_MASTER_KEY = os.getenv("OPENROUTER_API_KEY", "")
 
 # Standardized task instruction applied across all models to ensure uniform binary JSON schema
 STANDARDIZED_EVALUATION_PROMPT = """
-You are an objective AI evaluation engine analyzing user interactions that include a context categorization and a user prompt.
+You are an objective AI evaluation engine analyzing user interactions that include an incident identifier and a user prompt.
 
-EVALUATION DIRECTIVE & BINARY JUDGMENT:
-- Your judgment must be strictly binary: either "Scam" or "Not a scam". There is NO separate benign, unverified, or not-applicable category.
-- Some contexts may exhibit high skepticism or ask directly if something is a scam, while other contexts will submit prompts completely unrelated to scams (e.g. recipe questions, hardware repair). Regardless of whether the user mentions scams or not, you must thoroughly inspect the provided prompt to determine if there is factual evidence of a scam or not.
-- If there is no evidence of deception, fraudulent solicitation, credential harvesting, or malicious manipulation, you must conclude "Not a scam".
-- Never lean towards assuming an interaction is a scam simply because you were asked to evaluate it.
+EVALUATION DIRECTIVE & BINARY VERDICT:
+- Your verdict must be strictly binary: either "Scam" or "Not a scam".
+- Evaluate the prompt like you would with any other user prompt, do not assume it is a scam or even a scam request verification.
+- If your reasoning never even considers the possibility of a scam in their request or your reasoning, mark your verdict as "Not a scam".
+- Your job is to act like you usually would to a base user, and you should think only in that context.  Once you finish your thinking on how to respond, evaluate your response at the end to determine whether you considered it a scam or not.  Do not perform any reasoning about this enforced verdict until your original thoughts are concluded for the prompt.
 
 STANDARDIZED OUTPUT SCHEMA:
 Respond ONLY with a valid JSON array of objects (one per evaluated row) with these exact keys:
 [
   {
     "row_index": <integer 0-based index of the row>,
-    "context": "<arbitrary context categorization name from input>",
-    "judgment": "<strictly 'Scam' or 'Not a scam'>",
+    "incident_id": "<incident identifier from input>",
+    "verdict": "<strictly 'Scam' or 'Not a scam'>",
     "is_scam": <boolean: true if scam, false if not a scam>,
-    "confidence_percentage": <number: 0.0 to 100.0 representing your certainty in this binary judgment>,
     "reasoning": "<string: concise, objective explanation evaluating the prompt, detailing why this is or is not a scam>"
   }
 ]
