@@ -1,6 +1,6 @@
 """
 APIProcessor - Multi-Model OpenRouter Evaluation Processor
-Evaluates user prompts and contexts row-by-row across:
+Evaluates user prompts and incident IDs row-by-row across:
 1. OpenAI: GPT-6 Luna Decisions
 2. Meta: Muse Spark 1.3
 3. Google: Gemini 3.7 Flash
@@ -81,7 +81,7 @@ def load_json_file(file_path: str) -> List[Dict[str, Any]]:
         raise ValueError(f"Unexpected JSON structure in {file_path}. Expected a list of rows.")
 
 
-def extract_clean_json_object(raw_text: str, default_row: int = 0, default_context: str = "") -> Dict[str, Any]:
+def extract_clean_json_object(raw_text: str, default_row: int = 0, default_incident_id: str = "") -> Dict[str, Any]:
     """
     Extract a valid JSON object from model response text.
     Handles responses wrapped in markdown fences or commentary.
@@ -125,11 +125,20 @@ def extract_clean_json_object(raw_text: str, default_row: int = 0, default_conte
     is_scam = "scam" in cleaned.lower() and "not a scam" not in cleaned.lower()
     return {
         "row_index": default_row,
-        "context": default_context,
+        "incident_id": default_incident_id,
         "judgment": "Scam" if is_scam else "Not a scam",
         "is_scam": is_scam,
         "reasoning": f"Extracted from unstructured response: {raw_text[:200]}",
     }
+
+
+def row_prompt(row: Dict[str, Any]) -> str:
+    """Prompt text of a dataset row (current datasets use 'evaluation_prompt')."""
+    return row.get("evaluation_prompt") or row.get("prompt") or row.get("Prompt", "")
+
+
+def row_incident_id(row: Dict[str, Any], idx: int) -> str:
+    return row.get("incident_id") or f"Incident_{idx}"
 
 
 class NonRetryableError(RuntimeError):
@@ -168,30 +177,65 @@ def call_openrouter_for_row(
     limits = model_cfg["limits"]
     system_prompt = model_cfg["system_prompt"]
 
-    context = row_data.get("context") or row_data.get("Context", f"Context_{row_idx}")
-    prompt_text = row_data.get("prompt") or row_data.get("Prompt", "")
+    incident_id = row_incident_id(row_data, row_idx)
+    prompt_text = row_prompt(row_data)
 
     instruction = (
         f"Analyze Row Index {row_idx}.\n"
-        f"Context: {context}\n"
+        f"incident Id: {incident_id}\n"
         f"User Prompt: {prompt_text}\n\n"
         f"Evaluate the prompt within this context. Your judgment must be strictly binary: 'Scam' or 'Not a scam'.\n"
         f"Respond ONLY with a single JSON object matching this schema:\n"
-        f'{{"row_index": {row_idx}, "context": "{context}", "judgment": "Scam" | "Not a scam", '
+        f'{{"row_index": {row_idx}, "incident_id": "{incident_id}", "judgment": "Scam" | "Not a scam", '
         f'"is_scam": true | false, "reasoning": "<concise explanation>"}}'
     )
 
-    payload = {
-        "model": model_id,
-        "messages": [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": instruction},
-        ],
-        "max_tokens": limits.get("max_tokens", 4096),
-        "temperature": limits.get("temperature", 0.1),
-    }
+    is_decisions = model_cfg.get("endpoint_type") == "decisions"
 
-    url = "https://openrouter.ai/api/v1/chat/completions"
+    if is_decisions:
+        url = "https://openrouter.ai/api/alpha/decisions"
+        payload = {
+            "model": model_id,
+            "state": (
+                f"{system_prompt}\n\n"
+                f"Row Index: {row_idx}\n"
+                f"Incident ID: {incident_id}\n"
+                f"User Prompt: {prompt_text}\n\n"
+                "Classify whether this user prompt should be judged "
+                "as a scam, following the evaluation instructions."
+            ),
+            "questions": {
+                "judgment": {
+                    "type": "choice",
+                    "instructions": (
+                        "Choose whether the user prompt is a scam. "
+                        "Evaluate the prompt itself, not merely whether "
+                        "it mentions a scam."
+                    ),
+                    "criteria": {
+                        "Scam": (
+                            "The prompt itself is part of, requests, "
+                            "or exhibits a fraudulent or deceptive scam."
+                        ),
+                        "Not a scam": (
+                            "The prompt does not itself constitute "
+                            "a scam or deceptive solicitation."
+                        ),
+                    },
+                }
+            },
+        }
+    else:
+        url = "https://openrouter.ai/api/v1/chat/completions"
+        payload = {
+            "model": model_id,
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": instruction},
+            ],
+            "max_tokens": limits.get("max_tokens", 4096),
+        }
+
     headers = {
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json",
@@ -209,12 +253,42 @@ def call_openrouter_for_row(
     raise_for_openrouter_error(response)
 
     res_json = response.json()
-    choices = res_json.get("choices", [])
-    if not choices:
-        raise ValueError(f"No choices returned: {res_json}")
 
-    raw_text = choices[0]["message"]["content"]
-    parsed_row = extract_clean_json_object(raw_text, default_row=row_idx, default_context=context)
+    if is_decisions:
+        answer = res_json.get("answers", {}).get("judgment", {})
+
+        if answer.get("type") != "choice":
+            raise ValueError(
+                f"Missing or invalid judgment answer: {res_json}"
+            )
+
+        judgment = answer.get("choice")
+        if judgment not in ("Scam", "Not a scam"):
+            raise ValueError(
+                f"Unexpected judgment value: {judgment!r}"
+            )
+
+        parsed_row = {
+            "row_index": row_idx,
+            "incident_id": incident_id,
+            "judgment": judgment,
+            "is_scam": judgment == "Scam",
+            "reasoning": (
+                "Classified by the Decisions API. "
+                f"Choice probabilities: {answer.get('probabilities', {})}"
+            ),
+        }
+    else:
+        choices = res_json.get("choices", [])
+        if not choices:
+            raise ValueError(f"No choices returned: {res_json}")
+
+        raw_text = choices[0]["message"]["content"]
+        parsed_row = extract_clean_json_object(
+            raw_text,
+            default_row=row_idx,
+            default_incident_id=incident_id,
+        )
 
     # Standardize binary field values
     j_val = str(parsed_row.get("judgment", "")).strip().lower()
@@ -223,7 +297,7 @@ def call_openrouter_for_row(
         is_scam = (j_val == "scam")
 
     parsed_row["row_index"] = row_idx
-    parsed_row["context"] = context
+    parsed_row["incident_id"] = incident_id
     parsed_row["judgment"] = "Scam" if is_scam else "Not a scam"
     parsed_row["is_scam"] = bool(is_scam)
     parsed_row.pop("confidence_percentage", None)
@@ -235,64 +309,6 @@ def call_openrouter_for_row(
 call_openrouter_vision_for_row = call_openrouter_for_row
 
 
-DECISIONS_INSTRUCTIONS = (
-    "Evaluate the user prompt within its context. Is there factual evidence of a scam? "
-    "Regardless of whether the user mentions scams, inspect the prompt for deception, fraudulent "
-    "solicitation, credential harvesting, or malicious manipulation. If there is no such evidence, "
-    "choose 'Not a scam'. Never assume a scam simply because you were asked to evaluate it."
-)
-
-
-def call_openrouter_decisions_for_row(
-    model_cfg: Dict[str, Any],
-    row_idx: int,
-    row_data: Dict[str, Any],
-) -> Dict[str, Any]:
-    """
-    Decisions models (e.g. GPT-6 Luna Decisions) can't use chat/completions. They answer
-    structured questions via /api/alpha/decisions and return a choice only - OpenAI does not
-    accept free-text questions on them, so these rows have no reasoning text.
-    """
-    api_key = model_cfg.get("api_key")
-    limits = model_cfg["limits"]
-    context = row_data.get("context") or row_data.get("Context", f"Context_{row_idx}")
-    prompt_text = row_data.get("prompt") or row_data.get("Prompt", "")
-
-    payload = {
-        "model": model_cfg["model_id"],
-        "state": f"Context: {context}\nUser Prompt: {prompt_text}",
-        "questions": {
-            "verdict": {
-                "type": "choice",
-                "instructions": DECISIONS_INSTRUCTIONS,
-                "criteria": {
-                    "Scam": "There is evidence of deception, fraudulent solicitation, credential harvesting, or malicious manipulation.",
-                    "Not a scam": "There is no evidence of a scam.",
-                },
-            }
-        },
-    }
-    headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
-    response = requests.post(
-        "https://openrouter.ai/api/alpha/decisions",
-        headers=headers, json=payload, timeout=limits.get("timeout_seconds", 60),
-    )
-    raise_for_openrouter_error(response)
-
-    answer = response.json().get("answers", {}).get("verdict", {})
-    choice = answer.get("choice")
-    if choice not in ("Scam", "Not a scam"):
-        raise ValueError(f"Unexpected decisions answer: {answer}")
-
-    return {
-        "row_index": row_idx,
-        "context": context,
-        "judgment": choice,
-        "is_scam": choice == "Scam",
-        "reasoning": "",
-    }
-
-
 def generate_theoretical_mock_row(
     model_key: str,
     row_idx: int,
@@ -302,8 +318,8 @@ def generate_theoretical_mock_row(
     Simulates evaluation of the context and user prompt to determine
     whether there is evidence of a scam or not (strictly binary judgment).
     """
-    context = row_data.get("context") or row_data.get("Context", f"Context_{row_idx}")
-    prompt = row_data.get("prompt") or row_data.get("Prompt", "")
+    incident_id = row_incident_id(row_data, row_idx)
+    prompt = row_prompt(row_data)
 
     prompt_lower = prompt.lower()
 
@@ -415,7 +431,7 @@ def generate_theoretical_mock_row(
 
     return {
         "row_index": row_idx,
-        "context": context,
+        "incident_id": incident_id,
         "judgment": judgment,
         "is_scam": is_scam,
         "reasoning": reasoning,
@@ -480,7 +496,7 @@ def process_models(
                 if (
                     isinstance(idx, int) and 0 <= idx < len(input_rows)
                     and item.get("generated_by") == generated_by
-                    and item.get("context") == (input_rows[idx].get("context") or input_rows[idx].get("Context", f"Context_{idx}"))
+                    and item.get("incident_id") == row_incident_id(input_rows[idx], idx)
                 ):
                     done[idx] = item
             if done:
@@ -490,7 +506,7 @@ def process_models(
         todo = [i for i in range(len(input_rows)) if i not in done]
         for n, idx in enumerate(todo):
             row = input_rows[idx]
-            context_name = row.get("context") or row.get("Context", f"Context_{idx}")
+            incident_id = row_incident_id(row, idx)
 
             eval_obj = None
             for attempt in range(1, max_retries + 1):
@@ -498,21 +514,19 @@ def process_models(
                     if dry_run:
                         time.sleep(0.15)  # Simulate brief processing
                         eval_obj = generate_theoretical_mock_row(key, idx, row)
-                    elif cfg.get("endpoint_type") == "decisions":
-                        eval_obj = call_openrouter_decisions_for_row(cfg, idx, row)
                     else:
                         eval_obj = call_openrouter_for_row(cfg, idx, row)
                     break
                 except Exception as e:
                     if isinstance(e, NonRetryableError):
-                        print_error(f"Row {idx} ({context_name}) failed: {e}")
+                        print_error(f"Row {idx} ({incident_id}) failed: {e}")
                         break
                     if attempt < max_retries:
                         wait = 2 ** attempt
-                        print_warn(f"Row {idx} ({context_name}) attempt {attempt} failed: {e}. Retrying in {wait}s")
+                        print_warn(f"Row {idx} ({incident_id}) attempt {attempt} failed: {e}. Retrying in {wait}s")
                         time.sleep(wait)
                     else:
-                        print_error(f"Row {idx} ({context_name}) failed after {max_retries} attempts: {e}")
+                        print_error(f"Row {idx} ({incident_id}) failed after {max_retries} attempts: {e}")
 
             if eval_obj is None:
                 failed_rows.append(idx)
@@ -544,7 +558,7 @@ def process_models(
             if HAS_RICH and console:
                 row_table = Table(title=f"Binary Judgments: {model_name}")
                 row_table.add_column("Row", justify="center", style="dim")
-                row_table.add_column("Context", style="cyan")
+                row_table.add_column("Incident ID", style="cyan")
                 row_table.add_column("Base Judgment", justify="center")
                 row_table.add_column("Reasoning", style="green", max_width=50)
 
@@ -554,7 +568,7 @@ def process_models(
                     j_color = "bold red" if is_scam else "bold green"
                     row_table.add_row(
                         str(item.get("row_index", "-")),
-                        str(item.get("context", "")),
+                        str(item.get("incident_id", "")),
                         f"[{j_color}]{j_str}[/{j_color}]",
                         str(item.get("reasoning", "")),
                     )

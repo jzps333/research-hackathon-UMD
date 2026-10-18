@@ -1,5 +1,5 @@
 """
-Convert the team's Excel/CSV sheet (context, prompt, label) into a dataset JSON
+Convert the team's Excel/CSV sheet (incident_id, evaluation_prompt, label, ...) into a dataset JSON
 that main.py and judge.py both read. Row order is preserved, so row N in the
 sheet becomes row_index N everywhere downstream.
 
@@ -23,8 +23,8 @@ def main():
     parser.add_argument("-i", "--input", required=True, help="Path to .xlsx or .csv file")
     parser.add_argument("-o", "--output", default="labeled_dataset.json", help="Output JSON path")
     parser.add_argument("--sheet", default=None, help="Excel sheet name (default: first/active sheet)")
-    parser.add_argument("--context-col", default="context", help="Header of the context column")
-    parser.add_argument("--prompt-col", default="prompt", help="Header of the prompt column")
+    parser.add_argument("--prompt-col", default=None,
+                        help="Header of the prompt column (default: evaluation_prompt or prompt)")
     parser.add_argument("--label-col", default="label", help="Header of the ground-truth column (Scam / Not a scam)")
     args = parser.parse_args()
 
@@ -38,11 +38,14 @@ def main():
         print_error(f"No rows found in {args.input}")
         sys.exit(1)
 
-    ctx_col, prompt_col, label_col = (c.strip().lower() for c in (args.context_col, args.prompt_col, args.label_col))
+    label_col = args.label_col.strip().lower()
     headers = set(table[0].keys())
-    missing = [c for c in (ctx_col, prompt_col) if c not in headers]
-    if missing:
-        print_error(f"Missing column(s) {missing}. Found headers: {sorted(headers)}")
+    if args.prompt_col:
+        prompt_col = args.prompt_col.strip().lower()
+    else:
+        prompt_col = next((c for c in ("evaluation_prompt", "prompt") if c in headers), "evaluation_prompt")
+    if prompt_col not in headers:
+        print_error(f"Missing prompt column {prompt_col!r}. Found headers: {sorted(headers)}")
         sys.exit(1)
     if label_col not in headers:
         print_warn(f"No '{label_col}' column found - dataset will have no ground-truth labels.")
@@ -53,7 +56,9 @@ def main():
         if not prompt:
             print_warn(f"Sheet row {i + 2}: empty prompt, skipped")
             continue
-        out = {"context": str(rec.get(ctx_col) or "").strip(), "prompt": prompt}
+        # Keep every column from the sheet (incident_id, context, scam_type, ...); label is normalized below
+        out = {k: (v.strip() if isinstance(v, str) else v) for k, v in rec.items() if k and k != label_col}
+        out[prompt_col] = prompt
         if label_col in headers:
             raw = rec.get(label_col)
             label = normalize_verdict(raw)

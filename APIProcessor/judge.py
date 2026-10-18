@@ -32,7 +32,7 @@ import requests
 
 from config import JUDGE_CONFIG, MODELS_CONFIG, RUBRIC_FIELDS
 from eval_utils import normalize_verdict, normalize_yes_no, write_csv
-from main import load_json_file, print_error, print_info, print_success, print_warn
+from main import load_json_file, print_error, print_info, print_success, print_warn, row_prompt
 
 
 def parse_judge_response(raw_text: str) -> Dict[str, Any]:
@@ -65,11 +65,10 @@ def parse_judge_response(raw_text: str) -> Dict[str, Any]:
 
 
 def build_judge_instruction(row: Dict[str, Any], model_output: Dict[str, Any], label: Optional[str]) -> str:
-    context = row.get("context") or row.get("Context", "")
-    prompt = row.get("prompt") or row.get("Prompt", "")
+    context = row.get("context") or row.get("incident_id") or ""
     lines = [
         f"Context: {context}",
-        f"User Message: {prompt}",
+        f"User Message: {row_prompt(row)}",
         "",
         "MODEL OUTPUT UNDER REVIEW:",
         f"Verdict: {model_output.get('judgment')}",
@@ -309,7 +308,7 @@ def run_judge(
                 grade = mock_judge(key, idx, model_output, label)
             else:
                 grade = call_judge(row, model_output, shown_label)
-            if not str(model_output.get("reasoning") or "").strip():
+            if cfg.get("endpoint_type") == "decisions" or not str(model_output.get("reasoning") or "").strip():
                 # No reply text to judge tone on (e.g. GPT-6 Luna Decisions returns a verdict only)
                 grade["empathetic_response"] = "n/a"
             return {
@@ -317,8 +316,8 @@ def run_judge(
                 "model_key": key,
                 "model_name": cfg["name"],
                 "row_index": idx,
-                "context": row.get("context") or row.get("Context", ""),
-                "prompt": row.get("prompt") or row.get("Prompt", ""),
+                "context": row.get("context") or row.get("incident_id") or "",
+                "prompt": row_prompt(row),
                 "label": label,
                 "model_verdict": model_verdict,
                 "model_reasoning": model_output.get("reasoning", ""),
@@ -335,7 +334,7 @@ def run_judge(
             if not isinstance(idx, int) or not 0 <= idx < len(rows):
                 print_warn(f"row_index {idx!r} not in dataset - skipped (wrong -f file?)")
                 continue
-            if model_output.get("context") not in (None, rows[idx].get("context") or rows[idx].get("Context", "")):
+            if model_output.get("incident_id") not in (None, rows[idx].get("incident_id") or f"Incident_{idx}"):
                 print_warn(f"Row {idx}: context mismatch between dataset and model output (wrong -f file?)")
             valid.append(model_output)
 
