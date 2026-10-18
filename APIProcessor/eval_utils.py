@@ -87,13 +87,23 @@ def read_table(path: str, sheet: Optional[str] = None) -> List[Dict[str, Any]]:
         ]
 
 
+FORMULA_PREFIXES = ("=", "+", "-", "@", "\t", "\r")
+
+
+def excel_safe(value: Any) -> Any:
+    """Neutralize spreadsheet formula injection: prompts and model replies are untrusted text."""
+    if isinstance(value, str) and value.startswith(FORMULA_PREFIXES):
+        return "'" + value
+    return value
+
+
 def write_csv(path: str, rows: List[Dict[str, Any]], columns: Sequence[str]) -> None:
     """Write rows as CSV with a BOM so Excel opens UTF-8 text correctly."""
     os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
     with open(path, "w", encoding="utf-8-sig", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=list(columns), extrasaction="ignore")
         writer.writeheader()
-        writer.writerows(rows)
+        writer.writerows({k: excel_safe(v) for k, v in row.items()} for row in rows)
 
 
 # ------------------------------------------------------------------------------

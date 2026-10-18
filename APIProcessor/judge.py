@@ -230,6 +230,10 @@ def export_results_xlsx(rows: List[Dict[str, Any]], path: str) -> None:
             cell.font = Font(bold=True)
         for rec in sheet_rows:
             ws.append([rec.get(c) for c in RESULTS_CSV_COLUMNS])
+            for cell in ws[ws.max_row]:
+                if cell.data_type == "f":
+                    # Untrusted text starting with "=" must stay text, never a formula
+                    cell.data_type = "s"
         for i, col in enumerate(RESULTS_CSV_COLUMNS, start=1):
             letter = ws.cell(row=1, column=i).column_letter
             ws.column_dimensions[letter].width = wide.get(col, 16)
