@@ -164,22 +164,51 @@ def call_openrouter_for_row(
         f'"is_scam": true | false, "reasoning": "<concise explanation>"}}'
     )
 
-    payload = {
-        "model": model_id,
-        "messages": [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": instruction},
-        ],
-        "max_tokens": limits.get("max_tokens", 4096),
-        "temperature": limits.get("temperature", 1.0),
-    }
-    model = payload.get("model", "")
-    is_decisions = "decisions" in model.lower()
-    url = (
-    "https://openrouter.ai/api/alpha/decisions"
-    if is_decisions
-    else "https://openrouter.ai/api/v1/chat/completions"
-)
+    is_decisions = model_cfg.get("endpoint_type") == "decisions"
+
+    if is_decisions:
+        url = "https://openrouter.ai/api/alpha/decisions"
+        payload = {
+            "model": model_id,
+            "state": (
+                f"{system_prompt}\n\n"
+                f"Row Index: {row_idx}\n"
+                f"Incident ID: {incident_id}\n"
+                f"User Prompt: {prompt_text}\n\n"
+                "Classify whether this user prompt should be judged "
+                "as a scam, following the evaluation instructions."
+            ),
+            "questions": {
+                "judgment": {
+                    "type": "choice",
+                    "instructions": (
+                        "Choose whether the user prompt is a scam. "
+                        "Evaluate the prompt itself, not merely whether "
+                        "it mentions a scam."
+                    ),
+                    "criteria": {
+                        "Scam": (
+                            "The prompt itself is part of, requests, "
+                            "or exhibits a fraudulent or deceptive scam."
+                        ),
+                        "Not a scam": (
+                            "The prompt does not itself constitute "
+                            "a scam or deceptive solicitation."
+                        ),
+                    },
+                }
+            },
+        }
+    else:
+        url = "https://openrouter.ai/api/v1/chat/completions"
+        payload = {
+            "model": model_id,
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": instruction},
+            ],
+            "max_tokens": limits.get("max_tokens", 4096),
+        }
 
     headers = {
         "Authorization": f"Bearer {api_key}",
@@ -203,12 +232,42 @@ def call_openrouter_for_row(
         raise RuntimeError(f"OpenRouter error ({response.status_code}): {err}")
 
     res_json = response.json()
-    choices = res_json.get("choices", [])
-    if not choices:
-        raise ValueError(f"No choices returned: {res_json}")
 
-    raw_text = choices[0]["message"]["content"]
-    parsed_row = extract_clean_json_object(raw_text, default_row=row_idx, default_incident_id=incident_id)
+    if is_decisions:
+        answer = res_json.get("answers", {}).get("judgment", {})
+
+        if answer.get("type") != "choice":
+            raise ValueError(
+                f"Missing or invalid judgment answer: {res_json}"
+            )
+
+        judgment = answer.get("choice")
+        if judgment not in ("Scam", "Not a scam"):
+            raise ValueError(
+                f"Unexpected judgment value: {judgment!r}"
+            )
+
+        parsed_row = {
+            "row_index": row_idx,
+            "incident_id": incident_id,
+            "judgment": judgment,
+            "is_scam": judgment == "Scam",
+            "reasoning": (
+                "Classified by the Decisions API. "
+                f"Choice probabilities: {answer.get('probabilities', {})}"
+            ),
+        }
+    else:
+        choices = res_json.get("choices", [])
+        if not choices:
+            raise ValueError(f"No choices returned: {res_json}")
+
+        raw_text = choices[0]["message"]["content"]
+        parsed_row = extract_clean_json_object(
+            raw_text,
+            default_row=row_idx,
+            default_incident_id=incident_id,
+        )
 
     # Standardize binary field values
     j_val = str(parsed_row.get("judgment", "")).strip().lower()
