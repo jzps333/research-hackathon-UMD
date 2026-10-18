@@ -6,8 +6,8 @@ sheet becomes row_index N everywhere downstream.
 The 'label' field is ground truth. main.py never sends it to the evaluated models.
 
 Usage:
-    python import_labels.py -i scams.xlsx -o labeled_dataset.json
-    python import_labels.py -i scams.csv -o labeled_dataset.json --label-col "is scam"
+    python import_labels.py -i scams.xlsx -o older_adults_scams_dataset.json
+    python import_labels.py -i scams.csv -o older_adults_scams_dataset.json --label-col "is scam"
 """
 
 import argparse
@@ -21,7 +21,7 @@ from main import print_error, print_info, print_success, print_warn
 def main():
     parser = argparse.ArgumentParser(description="Import a labeled Excel/CSV sheet into dataset JSON.")
     parser.add_argument("-i", "--input", required=True, help="Path to .xlsx or .csv file")
-    parser.add_argument("-o", "--output", default="labeled_dataset.json", help="Output JSON path")
+    parser.add_argument("-o", "--output", default="older_adults_scams_dataset.json", help="Output JSON path")
     parser.add_argument("--sheet", default=None, help="Excel sheet name (default: first/active sheet)")
     parser.add_argument("--prompt-col", default=None,
                         help="Header of the prompt column (default: evaluation_prompt or prompt)")

@@ -51,7 +51,7 @@ MODELS_CONFIG: Dict[str, Dict[str, Any]] = {
         "endpoint_type": "decisions",
         "limits": {
             "max_tokens": int(os.getenv("OPENAI_MAX_TOKENS", "4096")),
-            "temperature": float(os.getenv("OPENAI_TEMPERATURE", "1.0")),
+            "temperature": float(os.getenv("OPENAI_TEMPERATURE", "0.1")),
             "timeout_seconds": int(os.getenv("OPENAI_TIMEOUT_SECONDS", "60")),
             "rate_limit_delay": float(os.getenv("OPENAI_RATE_LIMIT_DELAY", "1.0")),
         },
@@ -70,7 +70,7 @@ MODELS_CONFIG: Dict[str, Dict[str, Any]] = {
         "api_key": os.getenv("META_API_KEY") or os.getenv("OPENROUTER_META_API_KEY") or OPENROUTER_MASTER_KEY,
         "limits": {
             "max_tokens": int(os.getenv("META_MAX_TOKENS", "8192")),
-            "temperature": float(os.getenv("META_TEMPERATURE", "1.0")),
+            "temperature": float(os.getenv("META_TEMPERATURE", "0.2")),
             "timeout_seconds": int(os.getenv("META_TIMEOUT_SECONDS", "90")),
             "rate_limit_delay": float(os.getenv("META_RATE_LIMIT_DELAY", "1.0")),
         },
@@ -90,7 +90,7 @@ MODELS_CONFIG: Dict[str, Dict[str, Any]] = {
         "api_key": os.getenv("GOOGLE_API_KEY") or os.getenv("OPENROUTER_GOOGLE_API_KEY") or OPENROUTER_MASTER_KEY,
         "limits": {
             "max_tokens": int(os.getenv("GOOGLE_MAX_TOKENS", "4096")),
-            "temperature": float(os.getenv("GOOGLE_TEMPERATURE", "1.0")),
+            "temperature": float(os.getenv("GOOGLE_TEMPERATURE", "0.15")),
             "timeout_seconds": int(os.getenv("GOOGLE_TIMEOUT_SECONDS", "60")),
             "rate_limit_delay": float(os.getenv("GOOGLE_RATE_LIMIT_DELAY", "1.0")),
         },

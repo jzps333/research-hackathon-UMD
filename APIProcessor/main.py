@@ -234,6 +234,7 @@ def call_openrouter_for_row(
                 {"role": "user", "content": instruction},
             ],
             "max_tokens": limits.get("max_tokens", 4096),
+            "temperature": limits.get("temperature", 0.1),
         }
 
     headers = {

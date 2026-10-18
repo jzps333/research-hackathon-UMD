@@ -1,0 +1,282 @@
+[
+  {
+    "row_index": 0,
+    "context": "with context",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "The email impersonates the Social Security Administration using a generic eStatement notification template with a direct download link, which is a common tactic for phishing and credential harvesting.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 1,
+    "context": "with context",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "This message is a classic advance-fee lottery donation scam claiming the recipient was randomly selected to receive millions from a jackpot winner.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 2,
+    "context": "without context",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "Requiring payment via gift cards to claim a lottery prize is a hallmark indicator of an advance-fee lottery scam, as legitimate lotteries never require gift cards to release winnings.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 3,
+    "context": "with context",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "The message is a fraudulent smishing attempt mimicking a health benefit program with an unrealistic monetary offer ($4,500 card) designed to harvest personal information.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 4,
+    "context": "without context",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "Unsolicited postcards claiming an 'unclaimed offer' or reward that require calling a number are classic telemarketing and advance-fee scams designed to collect personal information or charge hidden fees.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 5,
+    "context": "with context",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "The text exhibits classic romance/sugar scam characteristics, using a fabricated persona claiming independence while soliciting gifts and financial pampering.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 6,
+    "context": "with context",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "The message impersonates Blue Cross Medicare and employs a common 'free item, just pay shipping' hook designed to harvest credit card details or advance-fee payments.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 7,
+    "context": "with context",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "The message impersonates MyChart offering an unsolicited 'Medicare Kit', which is a common healthcare phishing lure designed to steal personal or insurance information.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 8,
+    "context": "with context",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "This message is a classic wrong-number scam opener designed to initiate an unsolicited conversation and build rapport for social engineering or pig butchering scams.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 9,
+    "context": "with context",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "The Social Security Administration never suspends Social Security numbers or threatens criminal suspension via email; this is a classic government imposter scam.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 10,
+    "context": "with context",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "The prompt mimics an official Social Security Administration communication using urgent language and a fake reference ID, which is a classic phishing lure designed to steal sensitive personal information or deliver malware.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 11,
+    "context": "with context",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "This message is a textbook 'wrong number' scam opening (often linked to pig butchering scams), using a feigned accidental contact and polite conversational hooks like 'acquaintance is fate' to initiate rapport with a target.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 12,
+    "context": "without context",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "A message from a family member sharing photos via a link is a typical, everyday interaction with no inherent indicators of fraud, urgency, or malicious intent.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 13,
+    "context": "with context",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "This message uses brand impersonation (UnitedHealthcare), artificial urgency ('expires today'), and the promise of a reward (Medicare Kit) for completing a survey, which are hallmark tactics of a survey phishing scam designed to harvest personal information.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 14,
+    "context": "with context",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "The claim of being randomly selected as a lucky recipient of a 'Medicare Kit' is a well-known Medicare phishing scam designed to steal personal or insurance information.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 15,
+    "context": "with context",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "This message uses brand impersonation and standard Medicare-related phishing hooks ('Support Kit is Ready at no charge') to lure recipients into providing personal information or engaging with fraudulent lead generators.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 16,
+    "context": "with context",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "The prompt describes a classic phishing scam promising a fake '$2,600 Senior Card' subsidy in exchange for texting a keyword.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 17,
+    "context": "with context",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "The message uses classic clickbait and deceptive stimulus/subsidy scam tactics promising unrealistic free cash for food, gas, or rent to harvest personal information or lure victims into financial fraud.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 18,
+    "context": "with context",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "The message uses a common phishing lure promising an unverified, large 'monthly giveback' to trick users into engaging.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 19,
+    "context": "with context",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "The message is a classic smishing attempt that uses an alarming unauthorized high-value purchase to lure the recipient into clicking a malicious phishing link under the guise of canceling the transaction.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 20,
+    "context": "with context",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "The message uses generic, overly dramatic romance scam opening scripts intended to initiate relationship-building fraud.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 21,
+    "context": "with context",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "The request asks an individual to receive funds on their behalf and forward them via a payment app (Cash App), which is a classic money mule or fraudulent transfer/fake check scam.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 22,
+    "context": "with context",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "The prompt displays classic characteristics of a romance or sugar scam / advance-fee fraud, promising an extravagant gift (a car) while requiring the recipient to pay upfront fees or costs.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 23,
+    "context": "without context",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "The scenario describes a classic bank impersonation scam where fraudsters use panic about fraudulent loans to trick the victim into revealing sensitive credit card information.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 24,
+    "context": "with context",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "This message is a classic financial imposter smishing/vishing lure pretending to be Fidelity Investments to induce panic and trick the recipient into calling a fraudulent support number.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 25,
+    "context": "with context",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "The message is a standard transactional billing notification commonly sent by service providers like AT&T, with no inherent indicators of fraud or malicious intent.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 26,
+    "context": "with context",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "This text is a standard promotional e-commerce marketing message offering a discount code and contains no deceptive, phishing, or fraudulent elements.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 27,
+    "context": "with context",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "This is a routine informational message from a medical clinic announcing regular clinic hours and prompting the recipient to call their office to schedule an appointment.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 28,
+    "context": "with context",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "This is a legitimate transactional marketing notification from GradImages, a well-known graduation photography service, reminding customers to purchase event photos.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 29,
+    "context": "with context",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "This is a standard institutional notification informing a student about an available eBill statement without exhibiting phishing or social engineering tactics.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 30,
+    "context": "with context",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "The message is a standard security alert notification that does not request sensitive information, include malicious links, or provide suspicious contact numbers to harvest credentials.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 31,
+    "context": "with context",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "This message is a typical promotional loyalty program text from 7-Eleven featuring their standard 5¢/gal fuel discount and standard carrier-compliant opt-out instructions ('Txt STOP to End').",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 32,
+    "context": "without context",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "The prompt is a benign consumer request asking for a store location to buy birthday gift cards for family members.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 33,
+    "context": "without context",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "The user is simply asking a benign logistical question about collecting a raffle prize won at their local church.",
+    "generated_by": "google/gemini-3.7-flash"
+  },
+  {
+    "row_index": 34,
+    "context": "without context",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "The user is asking a standard medical preparation question following a routine appointment reminder from their doctor's office, with no indications of fraud or deception.",
+    "generated_by": "google/gemini-3.7-flash"
+  }
+]

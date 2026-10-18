@@ -13,8 +13,8 @@ which keeps it on equal footing with the human raters. Use --reveal-label to cha
 Results are saved after every item, so an interrupted run resumes where it stopped.
 
 Usage:
-    python judge.py -f labeled_dataset.json
-    python judge.py -f labeled_dataset.json -m openai --limit 5
+    python judge.py -f older_adults_scams_dataset.json
+    python judge.py -f older_adults_scams_dataset.json -m openai --limit 5
     python judge.py -f sample_data.json --dry-run
 """
 

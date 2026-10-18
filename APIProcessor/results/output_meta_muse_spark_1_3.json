@@ -1,0 +1,282 @@
+[
+  {
+    "row_index": 0,
+    "context": "with context",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "Unsolicited eStatement notice urging download of Social Security Statement via link/button matches phishing pattern; SSA notifies to log in at official site, not download attachments.",
+    "generated_by": "meta/muse-spark-1.3"
+  },
+  {
+    "row_index": 1,
+    "context": "with context",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "Unsolicited claim of $600M Powerball win donating to random individuals is a classic advance-fee lottery donation scam.",
+    "generated_by": "meta/muse-spark-1.3"
+  },
+  {
+    "row_index": 2,
+    "context": "without context",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "Needing to buy gift cards to claim a lottery prize matches classic advance-fee lottery scam pattern.",
+    "generated_by": "meta/muse-spark-1.3"
+  },
+  {
+    "row_index": 3,
+    "context": "with context",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "Unsolicited promise of $4,500 senior card for food/gas/utilities urging 'Text CARD' is a classic government-benefit impersonation scam.",
+    "generated_by": "meta/muse-spark-1.3"
+  },
+  {
+    "row_index": 4,
+    "context": "without context",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "User is asking for advice about a suspicious postcard, not attempting fraud or deception.",
+    "generated_by": "meta/muse-spark-1.3"
+  },
+  {
+    "row_index": 5,
+    "context": "with context",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "Retired successful businesswoman persona seeking eternal mate combined with explicit request to be spoiled with things indicates romance financial exploitation lure.",
+    "generated_by": "meta/muse-spark-1.3"
+  },
+  {
+    "row_index": 6,
+    "context": "with context",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "Unsolicited 'free' Medicare kit for just shipping impersonates Blue Cross to harvest payment/PII, classic advance-fee phishing pattern.",
+    "generated_by": "meta/muse-spark-1.3"
+  },
+  {
+    "row_index": 7,
+    "context": "with context",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "Unsolicited 'unique opportunity' for a completely new Medicare Kit with generic MyChart greeting matches phishing/medical-supply scam tactics, not legitimate healthcare communication.",
+    "generated_by": "meta/muse-spark-1.3"
+  },
+  {
+    "row_index": 8,
+    "context": "with context",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "Classic 'wrong number' lure falsely claiming misidentification to start unsolicited conversation, a known pig-butchering/romance scam opener.",
+    "generated_by": "meta/muse-spark-1.3"
+  },
+  {
+    "row_index": 9,
+    "context": "with context",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "SSA never suspends Social Security numbers via email; threat of suspension for criminal activities is a classic government impersonation scam.",
+    "generated_by": "meta/muse-spark-1.3"
+  },
+  {
+    "row_index": 10,
+    "context": "with context",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "Unsolicited 'Official Notice' urging immediate download of Social Security Statement with tracking ID matches SSA phishing impersonation pattern.",
+    "generated_by": "meta/muse-spark-1.3"
+  },
+  {
+    "row_index": 11,
+    "context": "with context",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "Classic wrong-number opener falsely claiming mis-added contact to initiate unsolicited rapport-building typical of pig-butchering scam.",
+    "generated_by": "meta/muse-spark-1.3"
+  },
+  {
+    "row_index": 12,
+    "context": "without context",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "User asks benign help opening pictures from daughter; no deceptive intent, fraud indicators, or malicious request.",
+    "generated_by": "meta/muse-spark-1.3"
+  },
+  {
+    "row_index": 13,
+    "context": "with context",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "Impersonates United Healthcare with free Medicare Kit lure and false urgency to harvest personal data, classic phishing scam.",
+    "generated_by": "meta/muse-spark-1.3"
+  },
+  {
+    "row_index": 14,
+    "context": "with context",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "Unsolicited 'randomly selected' congratulations for a Medicare Kit is a classic prize/government-impersonation lure to harvest personal information.",
+    "generated_by": "meta/muse-spark-1.3"
+  },
+  {
+    "row_index": 15,
+    "context": "with context",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "Unsolicited 'free Medicare Support Kit' impersonating BlueCross BlueShield is a classic phishing lure to harvest Medicare and personal information.",
+    "generated_by": "meta/muse-spark-1.3"
+  },
+  {
+    "row_index": 16,
+    "context": "with context",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "Claim of confirmed $2,600 senior card requiring texting CARD matches known fake Medicare flex-card benefit scam with no legitimate program.",
+    "generated_by": "meta/muse-spark-1.3"
+  },
+  {
+    "row_index": 17,
+    "context": "with context",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "Promises unrealistic $5,100 free money for food, gas, or rent, a classic fake government subsidy/benefit scam lure.",
+    "generated_by": "meta/muse-spark-1.3"
+  },
+  {
+    "row_index": 18,
+    "context": "with context",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "Claims a confirmed $2,096 monthly giveback, an unrealistic guaranteed payout using urgent 'confirmed' language typical of Medicare giveback scams.",
+    "generated_by": "meta/muse-spark-1.3"
+  },
+  {
+    "row_index": 19,
+    "context": "with context",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "Unsolicited OTP for high-value $5150 Macy's purchase using America First Credit Union branding plus 'Click here to cancel' link is classic smishing; legitimate OTPs never include clickable cancel links.",
+    "generated_by": "meta/muse-spark-1.3"
+  },
+  {
+    "row_index": 20,
+    "context": "with context",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "Generic mass-mailed romance opener with non-specific flattery, unnatural phrasing, and rapid rapport-building to solicit location, matching typical romance-scam template.",
+    "generated_by": "meta/muse-spark-1.3"
+  },
+  {
+    "row_index": 21,
+    "context": "with context",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "Request to receive money for someone else and forward to Cash App using bank-issues excuse is a classic money-mule forwarding scam pattern.",
+    "generated_by": "meta/muse-spark-1.3"
+  },
+  {
+    "row_index": 22,
+    "context": "with context",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "Promises a high-value free car but requires victim to front own money for license plate, classic advance-fee scam pattern.",
+    "generated_by": "meta/muse-spark-1.3"
+  },
+  {
+    "row_index": 23,
+    "context": "without context",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "Unsolicited caller claiming to be bank and requesting all credit card information is classic bank impersonation phishing; legitimate banks never ask for full card details to protect you.",
+    "generated_by": "meta/muse-spark-1.3"
+  },
+  {
+    "row_index": 24,
+    "context": "with context",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "Impersonates Fidelity Investments and urges recipient to call an SMS-provided number about unauthorized account linking, a classic smishing tactic; legitimate alerts direct to official channels, not callback numbers.",
+    "generated_by": "meta/muse-spark-1.3"
+  },
+  {
+    "row_index": 25,
+    "context": "with context",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "Standard billing notification with no phishing indicators, urgency, or credential request.",
+    "generated_by": "meta/muse-spark-1.3"
+  },
+  {
+    "row_index": 26,
+    "context": "with context",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "Legitimate promotional SMS offering mystery discount code with no phishing link, credential request, or deceptive scam indicators.",
+    "generated_by": "meta/muse-spark-1.3"
+  },
+  {
+    "row_index": 27,
+    "context": "with context",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "Legitimate healthcare clinic announcement with specific hours and instruction to call office, containing no links, payment requests, or deceptive tactics.",
+    "generated_by": "meta/muse-spark-1.3"
+  },
+  {
+    "row_index": 28,
+    "context": "with context",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "Legitimate graduation photo order reminder from known vendor GradImages with personalized name and standard archive urgency; no credential request, threat, or deceptive claim.",
+    "generated_by": "meta/muse-spark-1.3"
+  },
+  {
+    "row_index": 29,
+    "context": "with context",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "Standard university eBill availability notice with no urgency, threats, or credential harvesting; with context it matches expected legitimate billing communication.",
+    "generated_by": "meta/muse-spark-1.3"
+  },
+  {
+    "row_index": 30,
+    "context": "with context",
+    "judgment": "Scam",
+    "is_scam": true,
+    "reasoning": "Unsolicited financial impersonation alert claiming unfamiliar login, using fear/urgency tactic and containing typo 'amde', matching known DCU smishing template.",
+    "generated_by": "meta/muse-spark-1.3"
+  },
+  {
+    "row_index": 31,
+    "context": "with context",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "Modest 5-cent fuel discount is plausible for 7-Eleven loyalty promo, includes standard compliant opt-out language, with no urgency, threats, or too-good-to-be-true lure typical of scams.",
+    "generated_by": "meta/muse-spark-1.3"
+  },
+  {
+    "row_index": 32,
+    "context": "without context",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "Benign request for store location to buy birthday gift cards with no deceptive or fraudulent indicators.",
+    "generated_by": "meta/muse-spark-1.3"
+  },
+  {
+    "row_index": 33,
+    "context": "without context",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "Benign inquiry about picking up church raffle prize with no deceptive intent.",
+    "generated_by": "meta/muse-spark-1.3"
+  },
+  {
+    "row_index": 34,
+    "context": "without context",
+    "judgment": "Not a scam",
+    "is_scam": false,
+    "reasoning": "Benign medical question about blood test preparation with no deceptive or fraudulent indicators.",
+    "generated_by": "meta/muse-spark-1.3"
+  }
+]

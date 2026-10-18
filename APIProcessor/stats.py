@@ -9,7 +9,7 @@ Reports:
   - Every row a model got wrong
 
 Usage:
-    python stats.py -f labeled_dataset.json
+    python stats.py -f older_adults_scams_dataset.json
 """
 
 import argparse
@@ -64,7 +64,7 @@ def classification_stats(recs: List[Dict[str, Any]]) -> Dict[str, Any]:
 
 def main():
     parser = argparse.ArgumentParser(description="Summary statistics for a finished run.")
-    parser.add_argument("-f", "--file", default="labeled_dataset.json", help="Labeled dataset JSON used for the run")
+    parser.add_argument("-f", "--file", default="older_adults_scams_dataset.json", help="Labeled dataset JSON used for the run")
     parser.add_argument("-j", "--judge-dir", default=os.path.join("output", "judge"))
     parser.add_argument("--report", default=os.path.join("output", "stats_report.json"))
     args = parser.parse_args()

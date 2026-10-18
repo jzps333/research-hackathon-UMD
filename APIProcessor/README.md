@@ -151,15 +151,23 @@ Both grade **blind**: neither the judge nor the humans see the ground-truth labe
 python3 -m venv venv && source venv/bin/activate && pip install -r requirements.txt
 # Put NVIDIA_API_KEY (and OPENROUTER_API_KEY) in .env, never in .env.example
 
-python import_labels.py -i scams.xlsx -o labeled_dataset.json   # 1. Excel (context, prompt, label) -> JSON
-python main.py -f labeled_dataset.json                          # 2. run the 3 models
-python judge.py -f labeled_dataset.json                         # 3. judge every output (resumable)
+python import_labels.py -i scams.xlsx -o older_adults_scams_dataset.json   # 1. Excel (context, prompt, label) -> JSON
+python main.py -f older_adults_scams_dataset.json                          # 2. run the 3 models
+python judge.py -f older_adults_scams_dataset.json                         # 3. judge every output (resumable)
 python sample_for_humans.py --seed 42                           # 4. 30% of outputs, equal per model, blind sheet
 # 5. raters fill human_review/human_sheet.csv -> human_review/responses/<name>.csv
 python compare.py                                               # 6. agreement report
 ```
 
 `main.py` and `judge.py` accept `--dry-run` for testing without API keys. Dry-run labels are fake. GLM takes about 25-130s per call.
+
+### Results from the 35-row run
+
+`results/` holds the outputs of the full live run on `older_adults_scams_dataset.json`
+(35 prompts, 24 scam / 11 not a scam): the 3 models' verdicts, the Claude Haiku 5.5 judge
+labels (`results/judge/judge_results.csv` / `.xlsx`), and `stats_report.json`.
+Model temperatures for that run: Meta 0.2, Gemini 0.15 (GPT-6 Luna Decisions uses the
+decisions endpoint, which takes no temperature).
 
 ### Outputs
 
