@@ -49,6 +49,7 @@ MODELS_CONFIG: Dict[str, Dict[str, Any]] = {
         "model_id": os.getenv("OPENAI_MODEL_ID", "openai/gpt-6-luna-decisions"),
         "openrouter_link": "https://openrouter.ai/models/openai/gpt-6-luna-decisions",
         "api_key": os.getenv("OPENAI_API_KEY") or os.getenv("OPENROUTER_OPENAI_API_KEY") or OPENROUTER_MASTER_KEY,
+        "endpoint_type": "decisions",
         "limits": {
             "max_tokens": int(os.getenv("OPENAI_MAX_TOKENS", "4096")),
             "temperature": float(os.getenv("OPENAI_TEMPERATURE", "0.1")),
