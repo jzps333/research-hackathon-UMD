@@ -1,6 +1,6 @@
 """
 APIProcessor - Multi-Model OpenRouter Evaluation Processor
-Evaluates user prompts and contexts row-by-row across:
+Evaluates user prompts and incident IDs row-by-row across:
 1. OpenAI: GPT-6 Luna Decisions
 2. Meta: Muse Spark 1.3
 3. Google: Gemini 3.7 Flash
@@ -81,7 +81,7 @@ def load_json_file(file_path: str) -> List[Dict[str, Any]]:
         raise ValueError(f"Unexpected JSON structure in {file_path}. Expected a list of rows.")
 
 
-def extract_clean_json_object(raw_text: str, default_row: int = 0, default_context: str = "") -> Dict[str, Any]:
+def extract_clean_json_object(raw_text: str, default_row: int = 0, default_incident_id: str = "") -> Dict[str, Any]:
     """
     Extract a valid JSON object from model response text.
     Handles responses wrapped in markdown fences or commentary.
@@ -125,10 +125,10 @@ def extract_clean_json_object(raw_text: str, default_row: int = 0, default_conte
     is_scam = "scam" in cleaned.lower() and "not a scam" not in cleaned.lower()
     return {
         "row_index": default_row,
-        "context": default_context,
+        "incident_id": default_incident_id,
         "judgment": "Scam" if is_scam else "Not a scam",
         "is_scam": is_scam,
-        "confidence_percentage": 50.0,
+
         "reasoning": f"Extracted from unstructured response: {raw_text[:200]}",
     }
 
@@ -151,17 +151,17 @@ def call_openrouter_for_row(
     limits = model_cfg["limits"]
     system_prompt = model_cfg["system_prompt"]
 
-    context = row_data.get("context") or row_data.get("Context", f"Context_{row_idx}")
+    incident_id = row_data.get("incident_id") or row_data.get("incident_id", f"incident_{row_idx}")
     prompt_text = row_data.get("prompt") or row_data.get("Prompt", "")
 
     instruction = (
         f"Analyze Row Index {row_idx}.\n"
-        f"Context: {context}\n"
+        f"incident Id: {incident_id}\n"
         f"User Prompt: {prompt_text}\n\n"
         f"Evaluate the prompt within this context. Your judgment must be strictly binary: 'Scam' or 'Not a scam'.\n"
         f"Respond ONLY with a single JSON object matching this schema:\n"
-        f'{{"row_index": {row_idx}, "context": "{context}", "judgment": "Scam" | "Not a scam", '
-        f'"is_scam": true | false, "confidence_percentage": <number 0.0-100.0>, "reasoning": "<concise explanation>"}}'
+        f'{{"row_index": {row_idx}, "incident_id": "{incident_id}", "judgment": "Scam" | "Not a scam", '
+        f'"is_scam": true | false, "reasoning": "<concise explanation>"}}'
     )
 
     payload = {
@@ -171,7 +171,7 @@ def call_openrouter_for_row(
             {"role": "user", "content": instruction},
         ],
         "max_tokens": limits.get("max_tokens", 4096),
-        "temperature": limits.get("temperature", 0.1),
+        "temperature": limits.get("temperature", 1.0),
     }
 
     url = "https://openrouter.ai/api/v1/chat/completions"
@@ -202,7 +202,7 @@ def call_openrouter_for_row(
         raise ValueError(f"No choices returned: {res_json}")
 
     raw_text = choices[0]["message"]["content"]
-    parsed_row = extract_clean_json_object(raw_text, default_row=row_idx, default_context=context)
+    parsed_row = extract_clean_json_object(raw_text, default_row=row_idx, default_incident_id=incident_id)
 
     # Standardize binary field values
     j_val = str(parsed_row.get("judgment", "")).strip().lower()
@@ -211,11 +211,9 @@ def call_openrouter_for_row(
         is_scam = (j_val == "scam")
 
     parsed_row["row_index"] = row_idx
-    parsed_row["context"] = context
+    parsed_row["incident_id"] = incident_id
     parsed_row["judgment"] = "Scam" if is_scam else "Not a scam"
     parsed_row["is_scam"] = bool(is_scam)
-    if "confidence_percentage" not in parsed_row:
-        parsed_row["confidence_percentage"] = 95.0
 
     return parsed_row
 
@@ -233,7 +231,7 @@ def generate_theoretical_mock_row(
     Simulates evaluation of the context and user prompt to determine
     whether there is evidence of a scam or not (strictly binary judgment).
     """
-    context = row_data.get("context") or row_data.get("Context", f"Context_{row_idx}")
+    incident_id = row_data.get("incident_id") or row_data.get("Incident_ID", f"Incident_{row_idx}")
     prompt = row_data.get("prompt") or row_data.get("Prompt", "")
 
     prompt_lower = prompt.lower()
@@ -247,19 +245,16 @@ def generate_theoretical_mock_row(
                 "Textual analysis confirms fraudulent domain 'usps-redelivery-portal.top' "
                 "and artificial 12-hour expiration urgency. Definitive smishing credential harvesting attempt."
             )
-            conf = 99.4
         elif model_key == "meta":
             reasoning = (
                 "Message analysis shows an unsolicited text message from an unknown sender paired with an "
-                "untrusted .top top-level domain pretending to be postal authorities. High-confidence deceptive scam."
-            )
-            conf = 98.9
+                "untrusted .top top-level domain pretending to be postal authorities. High-confidence deceptive scam.")
         else:  # google
             reasoning = (
                 "Direct message reading confirms phishing URL 'usps-redelivery-portal.top' and spoofed package alert "
                 "signature. Textual evidence confirms smishing fraud."
             )
-            conf = 99.6
+
 
     # Row 1: Recipe Card (Prompt unrelated to scam)
     elif "recipe" in prompt_lower or "soup" in prompt_lower or "leek" in prompt_lower:
@@ -270,19 +265,19 @@ def generate_theoretical_mock_row(
                 "Prompt text presents ingredients and cooking directions for Potato Leek Soup. "
                 "No financial requests, links, or deceptive mechanisms present. Clean and legitimate."
             )
-            conf = 99.8
+
         elif model_key == "meta":
             reasoning = (
                 "Context depicts authentic culinary instructions with standard kitchen measurements. "
                 "Prompt asks for ingredient clarification. Zero indicators of deception or fraud."
             )
-            conf = 99.7
+
         else:  # google
             reasoning = (
                 "Semantic analysis confirms standard culinary recipe (leeks, potatoes, broth). "
                 "No scam indicators detected."
             )
-            conf = 99.9
+
 
     # Row 2: Telegram Job Check Scam
     elif "telegram" in prompt_lower or "job" in prompt_lower or "check" in prompt_lower or "zelle" in prompt_lower:
@@ -293,19 +288,19 @@ def generate_theoretical_mock_row(
                 "Prompt details a Telegram recruitment communication instructing the user to deposit a $3,200 company check "
                 "and immediately send $2,400 via Zelle to a third-party vendor. Classic fake check overpayment fraud."
             )
-            conf = 99.2
+
         elif model_key == "meta":
             reasoning = (
                 "Contextual review of job offer demonstrates textbook advance-fee employment fraud: "
                 "unrealistic pay ($55/hr), remote hiring on Telegram, and an irreversible Zelle transfer demand."
             )
-            conf = 98.8
+
         else:  # google
             reasoning = (
                 "Textual evidence in communication highlights high-risk fraud markers: fake check issuance coupled "
                 "with an urgent Zelle remittance for home office equipment."
             )
-            conf = 99.3
+ 
 
     # Row 3: Washing Machine Valve (Prompt unrelated to scam)
     elif "appliance" in prompt_lower or "valve" in prompt_lower or "machine" in prompt_lower or "hose" in prompt_lower:
@@ -316,19 +311,19 @@ def generate_theoretical_mock_row(
                 "User prompt describes washing machine maintenance and standard 3/4\" hose thread specifications. "
                 "Valid technical plumbing inquiry; no scam elements detected."
             )
-            conf = 99.8
+
         elif model_key == "meta":
             reasoning = (
                 "Inquiry concerns mechanical equipment maintenance for water inlet valves and filter cleaning. "
                 "Prompt concerns plumbing repairs. Absolutely no evidence of fraudulent manipulation."
             )
-            conf = 99.6
+
         else:  # google
             reasoning = (
                 "Prompt analysis shows authentic appliance maintenance specifications. "
                 "Zero fraudulent or malicious characteristics present."
             )
-            conf = 99.9
+  
 
     # Row 4: Fake Invoice
     elif "invoice" in prompt_lower or "subscription" in prompt_lower or "geek" in prompt_lower or "1-888" in prompt_lower:
@@ -339,33 +334,32 @@ def generate_theoretical_mock_row(
                 "Analysis of the invoice notice shows an unauthorized $799.00 auto-debit claim paired with "
                 "a prominent telephone dispute number (1-888-555-0194). Classic callback tech support phishing scam."
             )
-            conf = 97.2
+            
         elif model_key == "meta":
             reasoning = (
                 "Prompt describes a fabricated billing notification engineered to induce urgency and panic, "
                 "directing the recipient to call a toll-free number for a refund. Clear refund fraud vector."
             )
-            conf = 96.5
+          
         else:  # google
             reasoning = (
                 "Notice details reveal callback scam characteristics: bogus 'Geek Cloud Protection' debit and "
                 "fraudulent phone solicitation vector. Strong evidence of a scam."
             )
-            conf = 97.8
+          
 
     else:
         # Default fallback
         judgment = "Not a scam"
         is_scam = False
         reasoning = "Textual review confirms no presence of fraudulent schemes, phishing, or deceptive solicitations."
-        conf = 95.0
+       
 
     return {
         "row_index": row_idx,
-        "context": context,
+        "incident_id": incident_id,
         "judgment": judgment,
         "is_scam": is_scam,
-        "confidence_percentage": conf,
         "reasoning": reasoning,
     }
 
@@ -407,7 +401,7 @@ def process_models(
         success = True
 
         for idx, row in enumerate(input_rows):
-            context_name = row.get("context") or row.get("Context", f"Context_{idx}")
+            incident_id = row.get("incident_id") or f"Incident_{idx}"
 
             try:
                 if dry_run:
@@ -419,7 +413,7 @@ def process_models(
                 model_results.append(eval_obj)
 
             except Exception as e:
-                print_error(f"Error on Row {idx} ({context_name}): {e}")
+                print_error(f"Error on Row {idx} ({incident_id}): {e}")
                 success = False
                 break
 
@@ -441,21 +435,19 @@ def process_models(
             if HAS_RICH and console:
                 row_table = Table(title=f"Binary Judgments: {model_name}")
                 row_table.add_column("Row", justify="center", style="dim")
-                row_table.add_column("Context", style="cyan")
+                row_table.add_column("Incident ID", style="cyan")
                 row_table.add_column("Base Judgment", justify="center")
-                row_table.add_column("Confidence", justify="right", style="magenta")
                 row_table.add_column("Reasoning", style="green", max_width=50)
 
                 for item in model_results:
                     j_str = str(item.get("judgment", ""))
                     is_scam = item.get("is_scam", False)
                     j_color = "bold red" if is_scam else "bold green"
-                    conf = f"{item.get('confidence_percentage', 0.0):.1f}%"
                     row_table.add_row(
                         str(item.get("row_index", "-")),
-                        str(item.get("context", "")),
+                        str(item.get("incident_id", "")),
                         f"[{j_color}]{j_str}[/{j_color}]",
-                        conf,
+
                         str(item.get("reasoning", "")),
                     )
                 console.print(row_table)
