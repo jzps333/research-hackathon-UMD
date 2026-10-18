@@ -173,8 +173,14 @@ def call_openrouter_for_row(
         "max_tokens": limits.get("max_tokens", 4096),
         "temperature": limits.get("temperature", 1.0),
     }
+    model = payload.get("model", "")
+    is_decisions = "decisions" in model.lower()
+    url = (
+    "https://openrouter.ai/api/alpha/decisions"
+    if is_decisions
+    else "https://openrouter.ai/api/v1/chat/completions"
+)
 
-    url = "https://openrouter.ai/api/v1/chat/completions"
     headers = {
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json",
