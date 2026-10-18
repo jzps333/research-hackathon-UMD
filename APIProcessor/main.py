@@ -128,9 +128,26 @@ def extract_clean_json_object(raw_text: str, default_row: int = 0, default_conte
         "context": default_context,
         "judgment": "Scam" if is_scam else "Not a scam",
         "is_scam": is_scam,
-        "confidence_percentage": 50.0,
         "reasoning": f"Extracted from unstructured response: {raw_text[:200]}",
     }
+
+
+class NonRetryableError(RuntimeError):
+    """Request can never succeed as sent (bad model ID, bad key, wrong endpoint) - don't retry."""
+
+
+def raise_for_openrouter_error(response: requests.Response) -> None:
+    if response.ok:
+        return
+    try:
+        err = response.json()
+    except Exception:
+        err = response.text
+    msg = f"OpenRouter error ({response.status_code}): {err}"
+    # 4xx other than rate limiting / timeout means the request itself is wrong
+    if 400 <= response.status_code < 500 and response.status_code not in (408, 429):
+        raise NonRetryableError(msg)
+    raise RuntimeError(msg)
 
 
 def call_openrouter_for_row(
@@ -161,7 +178,7 @@ def call_openrouter_for_row(
         f"Evaluate the prompt within this context. Your judgment must be strictly binary: 'Scam' or 'Not a scam'.\n"
         f"Respond ONLY with a single JSON object matching this schema:\n"
         f'{{"row_index": {row_idx}, "context": "{context}", "judgment": "Scam" | "Not a scam", '
-        f'"is_scam": true | false, "confidence_percentage": <number 0.0-100.0>, "reasoning": "<concise explanation>"}}'
+        f'"is_scam": true | false, "reasoning": "<concise explanation>"}}'
     )
 
     payload = {
@@ -189,12 +206,7 @@ def call_openrouter_for_row(
     timeout = limits.get("timeout_seconds", 60)
     response = requests.post(url, headers=headers, json=payload, timeout=timeout)
 
-    if not response.ok:
-        try:
-            err = response.json()
-        except Exception:
-            err = response.text
-        raise RuntimeError(f"OpenRouter error ({response.status_code}): {err}")
+    raise_for_openrouter_error(response)
 
     res_json = response.json()
     choices = res_json.get("choices", [])
@@ -214,14 +226,71 @@ def call_openrouter_for_row(
     parsed_row["context"] = context
     parsed_row["judgment"] = "Scam" if is_scam else "Not a scam"
     parsed_row["is_scam"] = bool(is_scam)
-    if "confidence_percentage" not in parsed_row:
-        parsed_row["confidence_percentage"] = 95.0
+    parsed_row.pop("confidence_percentage", None)
 
     return parsed_row
 
 
 # Alias for backward compatibility
 call_openrouter_vision_for_row = call_openrouter_for_row
+
+
+DECISIONS_INSTRUCTIONS = (
+    "Evaluate the user prompt within its context. Is there factual evidence of a scam? "
+    "Regardless of whether the user mentions scams, inspect the prompt for deception, fraudulent "
+    "solicitation, credential harvesting, or malicious manipulation. If there is no such evidence, "
+    "choose 'Not a scam'. Never assume a scam simply because you were asked to evaluate it."
+)
+
+
+def call_openrouter_decisions_for_row(
+    model_cfg: Dict[str, Any],
+    row_idx: int,
+    row_data: Dict[str, Any],
+) -> Dict[str, Any]:
+    """
+    Decisions models (e.g. GPT-6 Luna Decisions) can't use chat/completions. They answer
+    structured questions via /api/alpha/decisions and return a choice only - OpenAI does not
+    accept free-text questions on them, so these rows have no reasoning text.
+    """
+    api_key = model_cfg.get("api_key")
+    limits = model_cfg["limits"]
+    context = row_data.get("context") or row_data.get("Context", f"Context_{row_idx}")
+    prompt_text = row_data.get("prompt") or row_data.get("Prompt", "")
+
+    payload = {
+        "model": model_cfg["model_id"],
+        "state": f"Context: {context}\nUser Prompt: {prompt_text}",
+        "questions": {
+            "verdict": {
+                "type": "choice",
+                "instructions": DECISIONS_INSTRUCTIONS,
+                "criteria": {
+                    "Scam": "There is evidence of deception, fraudulent solicitation, credential harvesting, or malicious manipulation.",
+                    "Not a scam": "There is no evidence of a scam.",
+                },
+            }
+        },
+    }
+    headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
+    response = requests.post(
+        "https://openrouter.ai/api/alpha/decisions",
+        headers=headers, json=payload, timeout=limits.get("timeout_seconds", 60),
+    )
+    raise_for_openrouter_error(response)
+
+    answer = response.json().get("answers", {}).get("verdict", {})
+    choice = answer.get("choice")
+    if choice not in ("Scam", "Not a scam"):
+        raise ValueError(f"Unexpected decisions answer: {answer}")
+
+    return {
+        "row_index": row_idx,
+        "context": context,
+        "judgment": choice,
+        "is_scam": choice == "Scam",
+        "reasoning": "",
+    }
 
 
 def generate_theoretical_mock_row(
@@ -247,19 +316,16 @@ def generate_theoretical_mock_row(
                 "Textual analysis confirms fraudulent domain 'usps-redelivery-portal.top' "
                 "and artificial 12-hour expiration urgency. Definitive smishing credential harvesting attempt."
             )
-            conf = 99.4
         elif model_key == "meta":
             reasoning = (
                 "Message analysis shows an unsolicited text message from an unknown sender paired with an "
                 "untrusted .top top-level domain pretending to be postal authorities. High-confidence deceptive scam."
             )
-            conf = 98.9
         else:  # google
             reasoning = (
                 "Direct message reading confirms phishing URL 'usps-redelivery-portal.top' and spoofed package alert "
                 "signature. Textual evidence confirms smishing fraud."
             )
-            conf = 99.6
 
     # Row 1: Recipe Card (Prompt unrelated to scam)
     elif "recipe" in prompt_lower or "soup" in prompt_lower or "leek" in prompt_lower:
@@ -270,19 +336,16 @@ def generate_theoretical_mock_row(
                 "Prompt text presents ingredients and cooking directions for Potato Leek Soup. "
                 "No financial requests, links, or deceptive mechanisms present. Clean and legitimate."
             )
-            conf = 99.8
         elif model_key == "meta":
             reasoning = (
                 "Context depicts authentic culinary instructions with standard kitchen measurements. "
                 "Prompt asks for ingredient clarification. Zero indicators of deception or fraud."
             )
-            conf = 99.7
         else:  # google
             reasoning = (
                 "Semantic analysis confirms standard culinary recipe (leeks, potatoes, broth). "
                 "No scam indicators detected."
             )
-            conf = 99.9
 
     # Row 2: Telegram Job Check Scam
     elif "telegram" in prompt_lower or "job" in prompt_lower or "check" in prompt_lower or "zelle" in prompt_lower:
@@ -293,19 +356,16 @@ def generate_theoretical_mock_row(
                 "Prompt details a Telegram recruitment communication instructing the user to deposit a $3,200 company check "
                 "and immediately send $2,400 via Zelle to a third-party vendor. Classic fake check overpayment fraud."
             )
-            conf = 99.2
         elif model_key == "meta":
             reasoning = (
                 "Contextual review of job offer demonstrates textbook advance-fee employment fraud: "
                 "unrealistic pay ($55/hr), remote hiring on Telegram, and an irreversible Zelle transfer demand."
             )
-            conf = 98.8
         else:  # google
             reasoning = (
                 "Textual evidence in communication highlights high-risk fraud markers: fake check issuance coupled "
                 "with an urgent Zelle remittance for home office equipment."
             )
-            conf = 99.3
 
     # Row 3: Washing Machine Valve (Prompt unrelated to scam)
     elif "appliance" in prompt_lower or "valve" in prompt_lower or "machine" in prompt_lower or "hose" in prompt_lower:
@@ -316,19 +376,16 @@ def generate_theoretical_mock_row(
                 "User prompt describes washing machine maintenance and standard 3/4\" hose thread specifications. "
                 "Valid technical plumbing inquiry; no scam elements detected."
             )
-            conf = 99.8
         elif model_key == "meta":
             reasoning = (
                 "Inquiry concerns mechanical equipment maintenance for water inlet valves and filter cleaning. "
                 "Prompt concerns plumbing repairs. Absolutely no evidence of fraudulent manipulation."
             )
-            conf = 99.6
         else:  # google
             reasoning = (
                 "Prompt analysis shows authentic appliance maintenance specifications. "
                 "Zero fraudulent or malicious characteristics present."
             )
-            conf = 99.9
 
     # Row 4: Fake Invoice
     elif "invoice" in prompt_lower or "subscription" in prompt_lower or "geek" in prompt_lower or "1-888" in prompt_lower:
@@ -339,33 +396,28 @@ def generate_theoretical_mock_row(
                 "Analysis of the invoice notice shows an unauthorized $799.00 auto-debit claim paired with "
                 "a prominent telephone dispute number (1-888-555-0194). Classic callback tech support phishing scam."
             )
-            conf = 97.2
         elif model_key == "meta":
             reasoning = (
                 "Prompt describes a fabricated billing notification engineered to induce urgency and panic, "
                 "directing the recipient to call a toll-free number for a refund. Clear refund fraud vector."
             )
-            conf = 96.5
         else:  # google
             reasoning = (
                 "Notice details reveal callback scam characteristics: bogus 'Geek Cloud Protection' debit and "
                 "fraudulent phone solicitation vector. Strong evidence of a scam."
             )
-            conf = 97.8
 
     else:
         # Default fallback
         judgment = "Not a scam"
         is_scam = False
         reasoning = "Textual review confirms no presence of fraudulent schemes, phishing, or deceptive solicitations."
-        conf = 95.0
 
     return {
         "row_index": row_idx,
         "context": context,
         "judgment": judgment,
         "is_scam": is_scam,
-        "confidence_percentage": conf,
         "reasoning": reasoning,
     }
 
@@ -375,8 +427,14 @@ def process_models(
     target_model: str,
     output_dir: str,
     dry_run: bool = False,
+    force: bool = False,
+    max_retries: int = 3,
 ) -> None:
-    """Execute processing across designated models row-by-row and save individual JSON outputs."""
+    """
+    Execute processing across designated models row-by-row and save individual JSON outputs.
+    Results are saved after every row; a rerun skips rows already done by the same model
+    (dry-run rows are never reused for a live run). Failed rows are retried, then skipped.
+    """
     os.makedirs(output_dir, exist_ok=True)
     input_rows = load_json_file(input_file)
 
@@ -402,40 +460,85 @@ def process_models(
         print_info(f"Processing with [bold]{model_name}[/bold] ({model_id})")
         print_info(f"OpenRouter Profile: {cfg['openrouter_link']}")
 
-        model_results = []
+        generated_by = "dry-run" if dry_run else model_id
         start_time = time.time()
-        success = True
 
-        for idx, row in enumerate(input_rows):
+        api_key = cfg.get("api_key")
+        if not dry_run and (not api_key or "your_" in api_key):
+            print_error(f"Missing API key for {model_name}. Set OPENROUTER_API_KEY in .env. Skipping model.")
+            results_summary.append({"Model": model_name, "Model ID": model_id, "Status": "FAILED",
+                                    "Duration": "0s", "Output File": "None"})
+            continue
+
+        # Resume: reuse rows from a previous run of this same model on this same dataset
+        done: Dict[int, Dict[str, Any]] = {}
+        if os.path.exists(out_path) and not force:
+            with open(out_path, "r", encoding="utf-8") as f:
+                previous = json.load(f)
+            for item in previous:
+                idx = item.get("row_index")
+                if (
+                    isinstance(idx, int) and 0 <= idx < len(input_rows)
+                    and item.get("generated_by") == generated_by
+                    and item.get("context") == (input_rows[idx].get("context") or input_rows[idx].get("Context", f"Context_{idx}"))
+                ):
+                    done[idx] = item
+            if done:
+                print_info(f"Resuming: {len(done)}/{len(input_rows)} row(s) already done (use --force to redo)")
+
+        failed_rows = []
+        todo = [i for i in range(len(input_rows)) if i not in done]
+        for n, idx in enumerate(todo):
+            row = input_rows[idx]
             context_name = row.get("context") or row.get("Context", f"Context_{idx}")
 
-            try:
-                if dry_run:
-                    time.sleep(0.15)  # Simulate brief processing
-                    eval_obj = generate_theoretical_mock_row(key, idx, row)
-                else:
-                    eval_obj = call_openrouter_for_row(cfg, idx, row)
+            eval_obj = None
+            for attempt in range(1, max_retries + 1):
+                try:
+                    if dry_run:
+                        time.sleep(0.15)  # Simulate brief processing
+                        eval_obj = generate_theoretical_mock_row(key, idx, row)
+                    elif cfg.get("endpoint_type") == "decisions":
+                        eval_obj = call_openrouter_decisions_for_row(cfg, idx, row)
+                    else:
+                        eval_obj = call_openrouter_for_row(cfg, idx, row)
+                    break
+                except Exception as e:
+                    if isinstance(e, NonRetryableError):
+                        print_error(f"Row {idx} ({context_name}) failed: {e}")
+                        break
+                    if attempt < max_retries:
+                        wait = 2 ** attempt
+                        print_warn(f"Row {idx} ({context_name}) attempt {attempt} failed: {e}. Retrying in {wait}s")
+                        time.sleep(wait)
+                    else:
+                        print_error(f"Row {idx} ({context_name}) failed after {max_retries} attempts: {e}")
 
-                model_results.append(eval_obj)
-
-            except Exception as e:
-                print_error(f"Error on Row {idx} ({context_name}): {e}")
-                success = False
-                break
+            if eval_obj is None:
+                failed_rows.append(idx)
+            else:
+                eval_obj["generated_by"] = generated_by
+                done[idx] = eval_obj
+                # Save after every row so a crash or rate limit loses nothing
+                with open(out_path, "w", encoding="utf-8") as f:
+                    json.dump([done[i] for i in sorted(done)], f, indent=2, ensure_ascii=False)
 
             # Rate limit delay between rows if needed
             delay = cfg["limits"].get("rate_limit_delay", 0.5)
-            if delay > 0 and not dry_run and idx < len(input_rows) - 1:
+            if delay > 0 and not dry_run and n < len(todo) - 1:
                 time.sleep(delay)
 
+        model_results = [done[i] for i in sorted(done)]
+        success = not failed_rows
         elapsed = round(time.time() - start_time, 2)
+        if failed_rows:
+            print_warn(f"{model_name}: {len(failed_rows)} row(s) failed {failed_rows} - rerun the same command to retry them")
 
-        if success and model_results:
-            # Save distinct JSON file
-            with open(out_path, "w", encoding="utf-8") as f:
-                json.dump(model_results, f, indent=2)
-
-            print_success(f"Saved binary evaluation JSON -> [bold]{out_path}[/bold] ({elapsed}s)")
+        if model_results:
+            print_success(
+                f"Saved binary evaluation JSON -> [bold]{out_path}[/bold] "
+                f"({len(model_results)}/{len(input_rows)} rows, {elapsed}s)"
+            )
 
             # Table breakdown of the binary judgments
             if HAS_RICH and console:
@@ -443,19 +546,16 @@ def process_models(
                 row_table.add_column("Row", justify="center", style="dim")
                 row_table.add_column("Context", style="cyan")
                 row_table.add_column("Base Judgment", justify="center")
-                row_table.add_column("Confidence", justify="right", style="magenta")
                 row_table.add_column("Reasoning", style="green", max_width=50)
 
                 for item in model_results:
                     j_str = str(item.get("judgment", ""))
                     is_scam = item.get("is_scam", False)
                     j_color = "bold red" if is_scam else "bold green"
-                    conf = f"{item.get('confidence_percentage', 0.0):.1f}%"
                     row_table.add_row(
                         str(item.get("row_index", "-")),
                         str(item.get("context", "")),
                         f"[{j_color}]{j_str}[/{j_color}]",
-                        conf,
                         str(item.get("reasoning", "")),
                     )
                 console.print(row_table)
@@ -463,7 +563,7 @@ def process_models(
             results_summary.append({
                 "Model": model_name,
                 "Model ID": model_id,
-                "Status": "SUCCESS",
+                "Status": "SUCCESS" if success else f"PARTIAL ({len(model_results)}/{len(input_rows)})",
                 "Duration": f"{elapsed}s",
                 "Output File": cfg["output_filename"],
             })
@@ -487,7 +587,7 @@ def process_models(
         summary_tbl.add_column("Duration")
         summary_tbl.add_column("Output JSON File", style="yellow")
         for row in results_summary:
-            status_style = "green" if row["Status"] == "SUCCESS" else "red"
+            status_style = {"SUCCESS": "green", "FAILED": "red"}.get(row["Status"], "yellow")
             summary_tbl.add_row(
                 row["Model"],
                 row["Model ID"],
@@ -522,6 +622,11 @@ def main():
         help="Directory to save the resulting individual JSON files (default: output)",
     )
     parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Ignore previous results in the output directory and rerun every row.",
+    )
+    parser.add_argument(
         "--dry-run",
         action="store_true",
         help="Simulate execution and generate theoretical binary JSON outputs without calling live APIs.",
@@ -535,6 +640,7 @@ def main():
             target_model=args.model,
             output_dir=args.output_dir,
             dry_run=args.dry_run,
+            force=args.force,
         )
     except Exception as e:
         print_error(f"Execution error: {e}")
